@@ -14,31 +14,34 @@
 							<div class="section-title">
 								<h3 class="title">Profile</h3>
 							</div>
+							{% for message in messages %}
+							<h3 style="color: #2b542c; font-weight: bold">{{message}}</h3>
+							{% endfor %}
 							<form action="" method="POST">
 								{% csrf_token %}
 								<div class="form-group">
-									<input class="input" type="text" name="first-name" placeholder="First Name">
+									<input class="input" type="text" name="first-name" value="{{user_profile.first_name}}" placeholder="First Name">
 								</div>
 								<div class="form-group">
-									<input class="input" type="text" name="last-name" placeholder="Last Name">
+									<input class="input" type="text" name="last-name" value="{{user_profile.last_name}}" placeholder="Last Name">
 								</div>
 								<div class="form-group">
 									<input class="input" type="email" value="{{user.email}}" name="email" placeholder="Email" readonly>
 								</div>
 								<div class="form-group">
-									<input class="input" type="text" name="address" placeholder="Address">
+									<input class="input" type="text" name="address" value="{{user_profile.address}}" placeholder="Address">
 								</div>
 								<div class="form-group">
-									<input class="input" type="text" name="city" placeholder="City">
+									<input class="input" type="text" name="city" value="{{user_profile.city}}" placeholder="City">
 								</div>
 								<div class="form-group">
-									<input class="input" type="text" name="country" placeholder="Country">
+									<input class="input" type="text" name="country" value="{{user_profile.country}}" placeholder="Country">
 								</div>
 								<div class="form-group">
-									<input class="input" type="text" name="zip-code" placeholder="ZIP Code">
+									<input class="input" type="text" name="zip-code" value="{{user_profile.zip_code}}" placeholder="ZIP Code">
 								</div>
 								<div class="form-group">
-									<input class="input" type="tel" name="tel" placeholder="Telephone">
+									<input class="input" type="tel" name="tel" value="{{user_profile.telephone}}" placeholder="Telephone">
 								</div>
 								<button class="primary-btn order-submit" type="submit">Save</button>
 							</form>

@@ -48,6 +48,7 @@ def signin(request):
 
 def profile(request):
     user = request.user
+    user_profile = Profile.objects.get(user=user)
     if request.method == "POST":
         first_name = request.POST.get("first-name")
         last_name = request.POST.get("last-name")
@@ -56,7 +57,19 @@ def profile(request):
         country = request.POST.get("country")
         zip_code = request.POST.get("zip-code")
         telephone = request.POST.get("tel")
-        profile = Profile.objects.create()
+        user_profile.first_name = first_name
+        user_profile.last_name = last_name
+        user_profile.address = address
+        user_profile.city = city
+        user_profile.country = country
+        user_profile.zip_code = zip_code
+        user_profile.telephone = telephone
+        user_profile.save()
+        messages.info(request, "Data is saved")
+        return redirect("profile")
+    else:
+        return render(request, "profile.html", context={"user_profile": user_profile
+                                                        })
 
 
 def checkout(request):
