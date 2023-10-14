@@ -1,5 +1,5 @@
 from django.forms import ModelForm, PasswordInput
-from .models import CustomUser
+from .models import CustomUser, Profile
 from django.contrib.auth.hashers import make_password, check_password
 from django import forms
 
@@ -46,4 +46,6 @@ class SignupForm(ModelForm):
         user.password_2 = make_password(self.cleaned_data["password_2"])
         if commit:
             user.save()
+            Profile.objects.create(user=user).save()
         return user
+

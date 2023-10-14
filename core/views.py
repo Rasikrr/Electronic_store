@@ -6,7 +6,7 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.models import User, auth
-from .models import CustomUser
+from .models import CustomUser, Profile
 from django.views.generic.edit import CreateView
 from .forms import SignupForm
 
@@ -24,12 +24,11 @@ class SignupCreateView(CreateView):
 
 
 def index(request):
-    return render(request, "index.html")
-
-
-def show_message_redirect(request, message, page):
-    messages.info(request, message)
-    return redirect(page)
+    try:
+        user = CustomUser.objects.get(username=request.user.username)
+    except CustomUser.DoesNotExist:
+        user = ""
+    return render(request, "index.html", context={"user": user})
 
 
 def signin(request):
@@ -45,6 +44,19 @@ def signin(request):
             return redirect("signin")
     else:
         return render(request, "signin.html")
+
+
+def profile(request):
+    user = request.user
+    if request.method == "POST":
+        first_name = request.POST.get("first-name")
+        last_name = request.POST.get("last-name")
+        address = request.POST.get("address")
+        city = request.POST.get("city")
+        country = request.POST.get("country")
+        zip_code = request.POST.get("zip-code")
+        telephone = request.POST.get("tel")
+        profile = Profile.objects.create()
 
 
 def checkout(request):
