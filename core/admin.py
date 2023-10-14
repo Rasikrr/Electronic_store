@@ -5,7 +5,7 @@ from .models import CustomUser
 
 
 class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ("email", "username",)
+    list_display = ("username", "email", "is_staff")
     list_display_links = ("email", "username")
 
 

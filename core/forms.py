@@ -1,5 +1,6 @@
 from django.forms import ModelForm, PasswordInput
 from .models import CustomUser
+from django.contrib.auth.hashers import make_password, check_password
 from django import forms
 
 
@@ -39,3 +40,10 @@ class SignupForm(ModelForm):
         if unique_username:
             self.add_error("username", "User with this username is exists")
 
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.password = make_password(self.cleaned_data['password'])
+        user.password_2 = make_password(self.cleaned_data["password_2"])
+        if commit:
+            user.save()
+        return user
