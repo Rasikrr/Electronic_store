@@ -24,10 +24,9 @@ def index(request):
     return render(request, "index.html")
 
 
-def signup(request):
-    if request.method == "POST":
-        pass
-    return render(request, "signup.html")
+def show_message_redirect(request, message, page):
+    messages.info(request, message)
+    return redirect(page)
 
 
 def signin(request):

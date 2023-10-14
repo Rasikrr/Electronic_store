@@ -1,18 +1,41 @@
-from django.forms import ModelForm
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+from django.forms import ModelForm, PasswordInput
+from .models import CustomUser
+from django import forms
 
 
 class SignupForm(ModelForm):
+    policy = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(),
+    )
+
     class Meta:
-        model = User
-        fields = ("username", "email", "password")
+        model = CustomUser
+        fields = ("username", "email", "password", "password_2")
 
-    def __init__(self,*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(SignupForm, self).__init__(*args, **kwargs)
-        self.fields["username"].widget.attrs['placeholder'] = "enter your username"
-        self.fields["email"].widget.attrs['placeholder'] = "enter your email"
-        self.fields["password"].widget.attrs['placeholder'] = "enter your password"
+        for key in self.fields.keys():
+            if key in ("password", "password_2"):
+                self.fields[key].widget = PasswordInput()
+            if key == "password_2":
+                self.fields[key].widget.attrs["placeholder"] = f"Confirm password"
+            else:
+                self.fields[key].widget.attrs["placeholder"] = f"enter your {key}"
 
+    def clean(self):
+        clean_data = super().clean()
+        unique_email = CustomUser.objects.filter(email=clean_data.get("email")).exists()
+        unique_username = CustomUser.objects.filter(username=clean_data.get("username")).exists()
+        policy = clean_data.get("policy")
+        password_1 = clean_data.get("password")
+        password_2 = clean_data.get("password_2")
+        if password_1 != password_2:
+            self.add_error("password_2", "Passwords are not similar")
+        if not policy:
+            self.add_error("policy", "Please accept policy")
+        if unique_email:
+            self.add_error("email", "User with this email is exists")
+        if unique_username:
+            self.add_error("username", "User with this username is exists")
 
