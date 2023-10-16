@@ -53,7 +53,7 @@
 						{% if not user%}
 						<li><a href="{% url 'signup' %}"><i class="fa fa-user-o"></i> My Account</a></li>
 						{% else %}
-						<li><a href="{% url 'profile' %}"><i class="fa fa-user-o"></i>{{user.username}}</a></li>
+						<li><a href="{% url 'profile' user_id=user.id %}"><i class="fa fa-user-o"></i>{{user.username}}</a></li>
 						{% endif %}
 					</ul>
 				</div>
@@ -70,7 +70,7 @@
 						<div class="col-md-3">
 							<div class="header-logo">
 								<a href="#" class="logo">
-									<a href="{% url 'index'%}"><img src="{% static 'img/logo.png' %}" alt=""></a>
+									<a href="{% url 'index'%}"><img src="{% static 'img/logo_3.png' %}" alt=""></a>
 								</a>
 							</div>
 						</div>
@@ -142,7 +142,11 @@
 										</div>
 										<div class="cart-btns">
 											<a href="#">View Cart</a>
-											<a href="{% url 'checkout'%}">Checkout  <i class="fa fa-arrow-circle-right"></i></a>
+											{% if user %}
+												<a href="{% url 'checkout' user_id=user.id%}">Checkout  <i class="fa fa-arrow-circle-right"></i></a>
+											{% else %}
+												<a href="{% url 'signin'%}">Sign In<i class="fa fa-arrow-circle-right"></i></a>
+											{% endif %}
 										</div>
 									</div>
 								</div>
@@ -176,7 +180,7 @@
 					<!-- NAV -->
 					<ul class="main-nav nav navbar-nav">
 						<li class="active"><a href="{% url 'index' %}">Home</a></li>
-						<li><a href="#">Hot Deals</a></li>
+						<li><a href="{% url 'catalog' %}">Catalog</a></li>
 						<li><a href="#">Categories</a></li>
 						<li><a href="#">Laptops</a></li>
 						<li><a href="#">Smartphones</a></li>
@@ -206,11 +210,10 @@
 						<div class="col-md-3 col-xs-6">
 							<div class="footer">
 								<h3 class="footer-title">About Us</h3>
-								<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut.</p>
 								<ul class="footer-links">
 									<li><a href="#"><i class="fa fa-map-marker"></i>Mangilik El C1</a></li>
 									<li><a href="#"><i class="fa fa-phone"></i>+77054559863</a></li>
-									<li><a href="#"><i class="fa fa-envelope-o"></i>email@email.com</a></li>
+									<li><a href="#"><i class="fa fa-envelope-o"></i>rasul_turtulov@mail.ru</a></li>
 								</ul>
 							</div>
 						</div>
@@ -219,7 +222,7 @@
 							<div class="footer">
 								<h3 class="footer-title">Categories</h3>
 								<ul class="footer-links">
-									<li><a href="#">Hot deals</a></li>
+									<li><a href="{% url 'catalog' %}">Catalog</a></li>
 									<li><a href="#">Laptops</a></li>
 									<li><a href="#">Smartphones</a></li>
 									<li><a href="#">Cameras</a></li>
@@ -247,8 +250,13 @@
 							<div class="footer">
 								<h3 class="footer-title">Service</h3>
 								<ul class="footer-links">
-									<li><a href="#">My Account</a></li>
-									<li><a href="#">View Cart</a></li>
+									{% if user %}
+										<li><a href="{% url 'profile' user_id=user.id %}">My Account</a></li>
+										<li><a href="{% url 'checkout' user_id=user.id %}">View Cart</a></li>
+									{% else %}
+										<li><a href="{% url 'signin'%}">Sign in</a></li>
+										<li><a href="{% url 'signup'%}">Sign Up</a></li>
+									{% endif %}
 									<li><a href="#">Wishlist</a></li>
 									<li><a href="#">Track My Order</a></li>
 									<li><a href="#">Help</a></li>

@@ -5,6 +5,11 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("signup", views.SignupCreateView.as_view(), name="signup"),
     path("signin", views.signin, name="signin"),
-    path("profile", views.profile, name="profile"),
-    path("checkout", views.checkout, name="checkout")
+    path("profile/<int:user_id>/", views.profile, name="profile"),
+    path("checkout/<int:user_id>/", views.checkout, name="checkout"),
+    path("catalog", views.catalog, name="catalog"),
+    path("product/<int:product_id>", views.product, name="product"),
+
+    path("logout", views.log_out, name="logout")
 ]
+
