@@ -10,11 +10,9 @@
 				<div class="row">
 					<div class="col-md-12">
 						<ul class="breadcrumb-tree">
-							<li><a href="#">Home</a></li>
-							<li><a href="#">All Categories</a></li>
-							<li><a href="#">Accessories</a></li>
-							<li><a href="#">Headphones</a></li>
-							<li class="active">Product name goes here</li>
+							<li><a href="{% url 'index'%}">Home</a></li>
+							<li><a href="/{{category.lower}}">{{category}}</a>
+							<li><a href="/{{category.lower}}/product/{{product.id}}">{{product.name}}</a></li>
 						</ul>
 					</div>
 				</div>
@@ -132,8 +130,7 @@
 
 							<ul class="product-links">
 								<li>Category:</li>
-								<li><a href="#">Headphones</a></li>
-								<li><a href="#">Accessories</a></li>
+								<li><a href="/{{category.lower}}">{{category}}</a></li>
 							</ul>
 
 							<ul class="product-links">

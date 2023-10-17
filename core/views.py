@@ -29,13 +29,16 @@ def index(request):
         user = CustomUser.objects.get(username=request.user.username)
     except CustomUser.DoesNotExist:
         user = ""
+    categories = Categories.objects.all()
     all_products = list(Product.objects.all())
     new_products = sample(all_products, 5)
-    top_selling_1 = sample(all_products, 5)
-    top_selling_2 = sample(all_products, 3)
-    top_selling_3 = sample(all_products, 3)
-    top_selling_4 = sample(all_products, 3)
+    shuffle(all_products)
+    top_selling_1 = all_products[:5]
+    top_selling_2 = all_products[6:9]
+    top_selling_3 = all_products[9:12]
+    top_selling_4 = all_products[12:15]
     return render(request, "index.html", context={"user": user,
+                                                  "categories": categories,
                                                   "new_products": new_products,
                                                   "top_selling_1": top_selling_1,
                                                   "top_selling_2": top_selling_2,
@@ -115,18 +118,40 @@ def catalog(request):
     products = list(Product.objects.all())
     shuffle(products)
     top_selling = products[:3]
+    categories = Categories.objects.all()
     return render(request, "store.html", context={"products": products,
-                                                  "top_selling": top_selling})
+                                                  "top_selling": top_selling,
+                                                  "categories": categories})
 
 
-def product(request, product_id):
+def product(request, product_id, category):
     single_product = Product.objects.get(id=product_id)
     similar_products = list(Product.objects.filter(category=single_product.category))
     similar_products.remove(single_product)
     shuffle(similar_products)
     related_products = sample(similar_products, 3)
+    categories = Categories.objects.all()
     return render(request, "product.html", context={"product": single_product,
-                                                    "related_products": related_products})
+                                                    "related_products": related_products,
+                                                    "category": category,
+                                                    "categories": categories
+                                                    })
+
+
+def category(request):
+    categories = {"/laptops": "Laptops",
+                  "/smartphones": "Smartphones",
+                  "/accessories": "Accessories",
+                  "/headphones": "Headphones",
+                  "/cameras": "Cameras"}
+    all_categories = Categories.objects.all()
+    main_category = Categories.objects.get(name=categories[request.get_full_path()])
+    products = Product.objects.filter(category=main_category)
+    top_selling = list(products)[:3]
+    return render(request, "category.html", context={"products": products,
+                                                     "category": main_category.name,
+                                                     "categories": all_categories,
+                                                     "top_selling": top_selling})
 
 
 @login_required(login_url="signin")

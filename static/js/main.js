@@ -129,8 +129,14 @@
 			priceInputMin = document.getElementById('price-min');
 
 	priceInputMax.addEventListener('change', function(){
-		updatePriceSlider($(this).parent() , this.value)
-	});
+    updatePriceSlider($(this).parent() , this.value);
+    priceSlider.noUiSlider.updateOptions({
+        range: {
+            'min': 1,
+            'max': parseInt(this.value)
+        }
+    });
+});
 
 	priceInputMin.addEventListener('change', function(){
 		updatePriceSlider($(this).parent() , this.value)
@@ -150,12 +156,12 @@
 	var priceSlider = document.getElementById('price-slider');
 	if (priceSlider) {
 		noUiSlider.create(priceSlider, {
-			start: [1, 999],
+			start: [1, 1],
 			connect: true,
 			step: 1,
 			range: {
 				'min': 1,
-				'max': 999
+				'max': 1999
 			}
 		});
 
