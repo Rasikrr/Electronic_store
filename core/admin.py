@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, Profile, Categories, Product
+from .models import CustomUser, Profile, Categories, Product, CartItem, WishListItem
 
 # Register your models here.
 
@@ -28,3 +28,5 @@ admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(Categories, CategoryAdmin)
 admin.site.register(Product, ProductAdmin)
+admin.site.register(WishListItem)
+admin.site.register(CartItem)

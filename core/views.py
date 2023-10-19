@@ -6,7 +6,7 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.models import User, auth
-from .models import CustomUser, Profile, Categories, Product
+from .models import CustomUser, Profile, Categories, Product, CartItem, WishListItem
 from django.views.generic.edit import CreateView
 from .forms import SignupForm
 from random import shuffle, sample
@@ -24,11 +24,15 @@ class SignupCreateView(CreateView):
         return context
 
 
+
+
 def index(request):
     try:
         user = CustomUser.objects.get(username=request.user.username)
+        cart = CartItem.objects.filter(user=user)
     except CustomUser.DoesNotExist:
         user = ""
+        cart = ""
     categories = Categories.objects.all()
     all_products = list(Product.objects.all())
     new_products = sample(all_products, 5)
@@ -43,7 +47,8 @@ def index(request):
                                                   "top_selling_1": top_selling_1,
                                                   "top_selling_2": top_selling_2,
                                                   "top_selling_3": top_selling_3,
-                                                  "top_selling_4": top_selling_4})
+                                                  "top_selling_4": top_selling_4,
+                                                  "cart": cart})
 
 
 def signin(request):
@@ -65,6 +70,8 @@ def signin(request):
 def profile(request, user_id):
     user = request.user
     user_profile = Profile.objects.get(user=user)
+    cart = CartItem.objects.filter(user=user)
+
     if request.method == "POST":
         first_name = request.POST.get("first-name")
         last_name = request.POST.get("last-name")
@@ -84,14 +91,17 @@ def profile(request, user_id):
         messages.info(request, "Data is saved")
         return redirect("profile")
     else:
-        return render(request, "profile.html", context={"user_profile": user_profile
+        return render(request, "profile.html", context={"user_profile": user_profile,
+                                                        "cart": cart,
                                                         })
 
 
 @login_required(login_url="signin")
 def checkout(request, user_id):
-    user = request.user
+    user = CustomUser.objects.get(username=request.user.username)
+    cart = CartItem.objects.filter(user=user)
     user_profile = Profile.objects.get(user=user)
+
     if request.method == "POST":
         first_name = request.POST.get("first-name")
         last_name = request.POST.get("last-name")
@@ -109,22 +119,38 @@ def checkout(request, user_id):
         user_profile.telephone = telephone
         user_profile.save()
     else:
-        return render(request, "checkout.html", context={"user_profile": user_profile})
+        return render(request, "checkout.html", context={"user_profile": user_profile,
+                                                         "cart": cart})
 
 
 def catalog(request):
-    user = request.user
-    user_profile = Profile.objects.get(user=user)
+    try:
+        user = CustomUser.objects.get(username=request.user.username)
+        cart = CartItem.objects.filter(user=user)
+        user_profile = Profile.objects.get(user=user)
+    except CustomUser.DoesNotExist:
+        user = ""
+        cart = ""
+        user_profile = ""
     products = list(Product.objects.all())
     shuffle(products)
     top_selling = products[:3]
     categories = Categories.objects.all()
     return render(request, "store.html", context={"products": products,
                                                   "top_selling": top_selling,
-                                                  "categories": categories})
+                                                  "categories": categories,
+                                                  "cart": cart})
 
 
 def product(request, product_id, category):
+    try:
+        user = CustomUser.objects.get(username=request.user.username)
+        cart = CartItem.objects.filter(user=user)
+        user_profile = Profile.objects.get(user=user)
+    except CustomUser.DoesNotExist:
+        user = ""
+        cart = ""
+        user_profile = ""
     single_product = Product.objects.get(id=product_id)
     similar_products = list(Product.objects.filter(category=single_product.category))
     similar_products.remove(single_product)
@@ -134,11 +160,20 @@ def product(request, product_id, category):
     return render(request, "product.html", context={"product": single_product,
                                                     "related_products": related_products,
                                                     "category": category,
-                                                    "categories": categories
+                                                    "categories": categories,
+                                                    "cart": cart
                                                     })
 
 
 def category(request):
+    try:
+        user = CustomUser.objects.get(username=request.user.username)
+        cart = CartItem.objects.filter(user=user)
+        user_profile = Profile.objects.get(user=user)
+    except CustomUser.DoesNotExist:
+        user = ""
+        cart = ""
+        user_profile = ""
     categories = {"/laptops": "Laptops",
                   "/smartphones": "Smartphones",
                   "/accessories": "Accessories",
@@ -151,7 +186,41 @@ def category(request):
     return render(request, "category.html", context={"products": products,
                                                      "category": main_category.name,
                                                      "categories": all_categories,
-                                                     "top_selling": top_selling})
+                                                     "top_selling": top_selling,
+                                                     "cart": cart})
+
+
+def add_to_cart(request, product_id):
+    print("-"*100)
+    if not request.user.is_authenticated:
+        return JsonResponse({'message': 'You have to sign in before adding item to cart'})
+    user_object = request.user
+    product_object = Product.objects.get(id=product_id)
+    cart_item, created = CartItem.objects.get_or_create(user=user_object, product=product_object)
+
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+    product_object.quantity -= 1
+    product_object.save()
+
+    return JsonResponse({'message': 'Item added to cart.',
+                         'quantity': str(cart_item.quantity)})
+
+
+def remove_from_cart(request, product_id):
+    user_object = request.user
+    product_object = Product.objects.get(id=product_id)
+    cart_item = CartItem.objects.get(user=user_object, product=product_object)
+    cart_item.quantity -= 1
+    product_object.quantity += 1
+    quantity = str(cart_item.quantity)
+    if not cart_item.quantity:
+        cart_item.delete()
+    else:
+        cart_item.save()
+    product_object.save()
+    return JsonResponse({"quantity": quantity})
 
 
 @login_required(login_url="signin")

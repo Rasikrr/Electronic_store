@@ -172,3 +172,41 @@
 	}
 
 })(jQuery);
+
+document.addEventListener("DOMContentLoaded", function() {
+    const addToCartButton = document.getElementById("add-cart-btn");
+    const messageContainer = document.getElementById("message-container");
+
+
+	addToCartButton.addEventListener("click", function() {
+		let IsInStock = document.querySelector(".product-available");
+		console.log(12)
+		if (IsInStock.textContent != "In Stock") {
+			alert("Item is out of stock")
+		} else {
+			const productId = this.getAttribute("data-product-id");
+			addToCart(productId);
+		}
+
+	});
+
+
+    function addToCart(productId) {
+        fetch(`/add_to_cart/${productId}`)
+            .then(response => response.json())
+            .then(data => {
+                showMessage(data.message);
+            });
+    }
+    function showMessage(message) {
+        const messageElement = document.createElement("p");
+        if (message == 'You have to sign in before adding item to cart'){
+            alert(message)
+        } else {
+            messageElement.textContent = message;
+            messageContainer.appendChild(messageElement);
+            messageElement.style.color = "green";
+            messageElement.style.fontWeight = "bold";
+        }
+    }
+});

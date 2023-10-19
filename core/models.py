@@ -39,3 +39,21 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class BaseItem(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        abstract = True
+
+
+class CartItem(BaseItem):
+    pass
+
+
+class WishListItem(BaseItem):
+    pass
+

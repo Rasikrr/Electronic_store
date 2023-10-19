@@ -50,10 +50,10 @@
 					</ul>
 					<ul class="header-links pull-right">
 						<li><a href="#"><i class="fa fa-dollar"></i> USD</a></li>
-						{% if not user%}
-						<li><a href="{% url 'signup' %}"><i class="fa fa-user-o"></i> My Account</a></li>
+						{% if user and user.id %}
+							<li><a href="{% url 'profile' user_id=user.id %}"><i class="fa fa-user-o"></i>{{user.username}}</a></li>
 						{% else %}
-						<li><a href="{% url 'profile' user_id=user.id %}"><i class="fa fa-user-o"></i>{{user.username}}</a></li>
+							<li><a href="{% url 'signup' %}"><i class="fa fa-user-o"></i> My Account</a></li>
 						{% endif %}
 					</ul>
 				</div>
@@ -111,39 +111,32 @@
 									<a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
 										<i class="fa fa-shopping-cart"></i>
 										<span>Your Cart</span>
-										<div class="qty">3</div>
+										{% if cart %}
+											<div class="qty">{{cart.count}}</div>
+										{% endif%}
 									</a>
 									<div class="cart-dropdown">
 										<div class="cart-list">
+											{% for item in cart %}
 											<div class="product-widget">
 												<div class="product-img">
-													<img src="{% static 'img/product01.png' %}" alt="">
+													<img src="{{item.product.image.url }}" alt="">
 												</div>
 												<div class="product-body">
-													<h3 class="product-name"><a href="#">product name goes here</a></h3>
-													<h4 class="product-price"><span class="qty">1x</span>$980.00</h4>
+													<h3 class="product-name"><a href="{% url 'product' product_id=item.product.id category=item.product.category.name%}">{{item.product.name}}</a></h3>
+													<h4 class="product-price"><span class="qty" prod-id="{{item.product.id}}"">{{item.quantity}}x</span>${{item.product.price}}</h4>
 												</div>
-												<button class="delete"><i class="fa fa-close"></i></button>
+												<button class="delete" data-product-id="{{item.product.id}}"><i class="fa fa-close"></i></button>
 											</div>
-
-											<div class="product-widget">
-												<div class="product-img">
-													<img src="{% static 'img/product02.png' %}" alt="">
-												</div>
-												<div class="product-body">
-													<h3 class="product-name"><a href="#">product name goes here</a></h3>
-													<h4 class="product-price"><span class="qty">3x</span>$980.00</h4>
-												</div>
-												<button class="delete"><i class="fa fa-close"></i></button>
-											</div>
+											{% endfor %}
 										</div>
 										<div class="cart-summary">
-											<small>3 Item(s) selected</small>
+											<small>{{cart.count}} Item(s) selected</small>
 											<h5>SUBTOTAL: $2940.00</h5>
 										</div>
 										<div class="cart-btns">
 											<a href="#">View Cart</a>
-											{% if user %}
+											{% if user and user.id %}
 												<a href="{% url 'checkout' user_id=user.id%}">Checkout  <i class="fa fa-arrow-circle-right"></i></a>
 											{% else %}
 												<a href="{% url 'signin'%}">Sign In<i class="fa fa-arrow-circle-right"></i></a>
@@ -251,7 +244,7 @@
 							<div class="footer">
 								<h3 class="footer-title">Service</h3>
 								<ul class="footer-links">
-									{% if user %}
+									{% if user and user.id %}
 										<li><a href="{% url 'profile' user_id=user.id %}">My Account</a></li>
 										<li><a href="{% url 'checkout' user_id=user.id %}">View Cart</a></li>
 									{% else %}
@@ -307,6 +300,30 @@
 		<script src="{% static 'js/nouislider.min.js' %}"></script>
 		<script src="{% static 'js/jquery.zoom.min.js' %}"></script>
 		<script src="{% static 'js/main.js' %}"></script>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		{% block custom_scripts %}
+<!--		<script>-->
+<!--			document.addEventListener("DOMContentLoaded", function() {-->
+<!--			const removeButtons = document.querySelectorAll(".delete");-->
+
+<!--			removeButtons.forEach(button => {-->
+<!--				button.addEventListener('click', function() {-->
+<!--					const productId = this.getAttribute("data-product-id")-->
+<!--					removeFromCart(productId);-->
+
+<!--				});-->
+<!--			});-->
+<!--			function removeFromCart(productId) {-->
+<!--				fetch(`/remove_from_cart/${productId}`)-->
+<!--						.then(response => response.json())-->
+<!--						.then(data => {-->
+
+<!--						});-->
+<!--			}-->
+
+<!--		});-->
+
+		{% endblock %}
 
 	</body>
 </html>
