@@ -19,14 +19,24 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display_links = list_display
 
 
+class CartItemAdmin(admin.ModelAdmin):
+    list_display = ("user", "product", "quantity")
+    list_display_links = list_display[0:len(list_display)-1]
+
+
 class ProductAdmin(admin.ModelAdmin):
     list_display = ("name", "category", "price", "quantity")
     list_display_links = ("name", "category")
+
+
+class WishListAdmin(admin.ModelAdmin):
+    list_display = ("user", "product")
+    list_display_links = list_display
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(Categories, CategoryAdmin)
 admin.site.register(Product, ProductAdmin)
-admin.site.register(WishListItem)
-admin.site.register(CartItem)
+admin.site.register(WishListItem, WishListAdmin)
+admin.site.register(CartItem, CartItemAdmin)

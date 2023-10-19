@@ -14,16 +14,50 @@ from random import shuffle, sample
 # Create your views here.
 
 
-class SignupCreateView(CreateView):
-    template_name = "signup.html"
-    form_class = SignupForm
-    success_url = reverse_lazy("index")
+# class SignupCreateView(CreateView):
+#     template_name = "signup.html"
+#     form_class = SignupForm
+#     success_url = reverse_lazy("index")
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         return context
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+def signup(request):
+    if request.method == "POST":
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            unique_email = CustomUser.objects.filter(email=cleaned_data.get("email")).exists()
+            unique_username = CustomUser.objects.filter(username=cleaned_data.get("username")).exists()
+            policy = cleaned_data.get("policy")
+            password_1 = cleaned_data.get("password")
+            password_2 = cleaned_data.get("password_2")
+            if password_1 != password_2:
+                messages.info(request, "password_2", "Passwords are not similar")
+                return redirect("signup")
+            if not policy:
+                messages.info(request, "policy", "Please accept policy")
+                return redirect("signup")
+            if unique_email:
+                messages.info(request, "email", "User with this email is exists")
+                return redirect("signup")
+            if unique_username:
+                messages.info(request, "username", "User with this username is exists")
+                return redirect("signup")
+            email = cleaned_data["email"]
+            username = cleaned_data["username"]
+            user_obj = CustomUser.objects.create_user(username=username,
+                                                      email=email, password=make_password(password_1),
+                                                      password_2=make_password(password_2))
+            user_obj.save()
+            Profile.objects.create(user=user_obj).save()
+            login(request, user_obj, backend="core.backends.EmailBackend")
+            return redirect("index")
 
-
+    else:
+        form = SignupForm()
+        return render(request, "signup.html",context={"form": form})
 
 
 def index(request):
@@ -205,7 +239,22 @@ def add_to_cart(request, product_id):
     product_object.save()
 
     return JsonResponse({'message': 'Item added to cart.',
-                         'quantity': str(cart_item.quantity)})
+                         'quantity': str(cart_item.quantity),
+                         'image': str(cart_item.product.image.url),
+                         'id': str(cart_item.product.id),
+                         'price': str(cart_item.product.price),
+                         'category': str(cart_item.product.category.name),
+                         'name': str(cart_item.product.name)
+                         })
+
+
+def check_cart(request):
+    try:
+        cart = CartItem.objects.get(user=request.user)
+        cart_len = str(cart.count())
+    except CartItem.DoesNotExist:
+        cart_len = 0
+    return JsonResponse({'cart_len': cart_len})
 
 
 def remove_from_cart(request, product_id):

@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("signup", views.SignupCreateView.as_view(), name="signup"),
+    path("signup", views.signup, name="signup"),
     path("signin", views.signin, name="signin"),
     path("profile/<int:user_id>/", views.profile, name="profile"),
     path("checkout/<int:user_id>/", views.checkout, name="checkout"),
@@ -15,6 +15,7 @@ urlpatterns = [
     path("add_to_cart/<int:product_id>", views.add_to_cart, name="add_to_cart"),
     path("remove_from_cart/<int:prosuct_id>", views.remove_from_cart, name="remove_from_cart"),
     path("<str:category>/product/<int:product_id>", views.product, name="product"),
+    path("check_cart", views.check_cart, name="check_cart"),
     path("logout", views.log_out, name="logout")
 ]
 

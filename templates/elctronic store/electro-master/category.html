@@ -122,9 +122,9 @@
 								</div>
 								<div class="product-body">
 									<p class="product-category">{{product.category.name}}</p>
-									<a href="{% url 'product' product_id=product.id category=product.category.name%}">
-										<h3 class="product-name"><a href="#">{{product.name}}</a></h3>
-									</a>
+
+										<h3 class="product-name"><a href="{% url 'product' product_id=product.id category=product.category.name%}">{{product.name}}</a></h3>
+
 									<a href="{% url 'product' product_id=product.id category=product.category.name%}">
 										<h4 class="product-price">${{product.price}}<del class="product-old-price">${{product.price}}</del></h4>
 									</a>

@@ -101,7 +101,7 @@
 									<a href="">
 										<i class="fa fa-heart-o"></i>
 										<span>Your Wishlist</span>
-										<div class="qty">2</div>
+										<div class="qty" id="wish-list-len">2</div>
 									</a>
 								</div>
 								<!-- /Wishlist -->
@@ -111,9 +111,7 @@
 									<a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
 										<i class="fa fa-shopping-cart"></i>
 										<span>Your Cart</span>
-										{% if cart %}
-											<div class="qty">{{cart.count}}</div>
-										{% endif%}
+										<div class="qty" id="cart-len">{{cart.count}}</div>
 									</a>
 									<div class="cart-dropdown">
 										<div class="cart-list">
@@ -131,7 +129,7 @@
 											{% endfor %}
 										</div>
 										<div class="cart-summary">
-											<small>{{cart.count}} Item(s) selected</small>
+											<small class="item-selected">{{cart.count}} Item(s) selected</small>
 											<h5>SUBTOTAL: $2940.00</h5>
 										</div>
 										<div class="cart-btns">
@@ -280,7 +278,6 @@
 							</ul>
 							<span class="copyright">
 								<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-								Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
 							<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
 							</span>
 						</div>
@@ -301,30 +298,37 @@
 		<script src="{% static 'js/jquery.zoom.min.js' %}"></script>
 		<script src="{% static 'js/main.js' %}"></script>
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-		{% block custom_scripts %}
-<!--		<script>-->
-<!--			document.addEventListener("DOMContentLoaded", function() {-->
-<!--			const removeButtons = document.querySelectorAll(".delete");-->
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+				const cartLenObj = document.getElementById("cart-len");
+				addToCart(cartLenObj)
+				function addToCart(cartLenObj) {
+					fetch(`/check_cart`)
+							.then(response => response.json())
+							.then(data => {
+								const cartLen = data.cart_len;
+								console.log(cartLen)
+								if(cartLen == "0"){
+									cartLenObj.style.display = "none";
+								}
 
-<!--			removeButtons.forEach(button => {-->
-<!--				button.addEventListener('click', function() {-->
-<!--					const productId = this.getAttribute("data-product-id")-->
-<!--					removeFromCart(productId);-->
-
-<!--				});-->
-<!--			});-->
-<!--			function removeFromCart(productId) {-->
-<!--				fetch(`/remove_from_cart/${productId}`)-->
-<!--						.then(response => response.json())-->
-<!--						.then(data => {-->
-
-<!--						});-->
-<!--			}-->
-
-<!--		});-->
-
-		{% endblock %}
+							});
+					}
+			});
+		</script>
 
 	</body>
 </html>
+{% endblock %}
+
+{% block custom_scripts %}
+<script>
+	document.addEventListener("DOMContentLoaded", function() {
+		const cartLenObj = document.querySelector(".qty");
+		const cartLen = cartLenObj.querySelectorAll(".product-widget").length
+		console.log("cart len ",cartLen);
+
+	});
+</script>
+
 {% endblock %}

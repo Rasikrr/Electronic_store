@@ -30,8 +30,8 @@
         {{form.policy}}
         <h3>I accept all terms & condition</h3>
       </div>
-      {% for error in form.errors.values %}
-        <h3 style="color: red">{{error}}</h3>
+      {% for message in messages %}
+        <h3 style="color: red">{{message}}</h3>
       {% endfor %}
       <div class="input-box button">
         <input type="Submit" value="Register Now">
