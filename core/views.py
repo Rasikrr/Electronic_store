@@ -57,7 +57,7 @@ def signup(request):
 
     else:
         form = SignupForm()
-        return render(request, "signup.html",context={"form": form})
+    return render(request, "signup.html",context={"form": form})
 
 
 def index(request):
@@ -250,7 +250,7 @@ def add_to_cart(request, product_id):
 
 def check_cart(request):
     try:
-        cart = CartItem.objects.get(user=request.user)
+        cart = CartItem.objects.filter(user=request.user)
         cart_len = str(cart.count())
     except CartItem.DoesNotExist:
         cart_len = 0

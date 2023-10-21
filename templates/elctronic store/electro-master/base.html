@@ -111,7 +111,9 @@
 									<a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
 										<i class="fa fa-shopping-cart"></i>
 										<span>Your Cart</span>
-										<div class="qty" id="cart-len">{{cart.count}}</div>
+										{% if user %}
+											<div class="qty" id="cart-len">{{cart.count}}</div>
+										{% endif %}
 									</a>
 									<div class="cart-dropdown">
 										<div class="cart-list">
@@ -215,10 +217,10 @@
 								<h3 class="footer-title">Categories</h3>
 								<ul class="footer-links">
 									<li><a href="{% url 'catalog' %}">Catalog</a></li>
-									<li><a href="#">Laptops</a></li>
-									<li><a href="#">Smartphones</a></li>
-									<li><a href="#">Cameras</a></li>
-									<li><a href="#">Accessories</a></li>
+									<li><a href="{% url 'laptops'%}">Laptops</a></li>
+									<li><a href="{% url 'smartphones' %}">Smartphones</a></li>
+									<li><a href="{% url 'cameras'%}">Cameras</a></li>
+									<li><a href="{% url 'accessories' %}">Accessories</a></li>
 								</ul>
 							</div>
 						</div>
