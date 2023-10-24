@@ -14,15 +14,6 @@ from random import shuffle, sample
 # Create your views here.
 
 
-# class SignupCreateView(CreateView):
-#     template_name = "signup.html"
-#     form_class = SignupForm
-#     success_url = reverse_lazy("index")
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         return context
-
 def signup(request):
     if request.method == "POST":
         form = SignupForm(request.POST)
@@ -57,7 +48,14 @@ def signup(request):
 
     else:
         form = SignupForm()
-    return render(request, "signup.html",context={"form": form})
+    return render(request, "signup.html", context={"form": form})
+
+
+# Function for search
+def search_func(request):
+    search_query = request.POST.get("search-bar")
+    selected_category = request.POST.get("input-select")
+    return redirect("search", product_name=search_query, selected_category=selected_category)
 
 
 def index(request):
@@ -67,22 +65,47 @@ def index(request):
     except CustomUser.DoesNotExist:
         user = ""
         cart = ""
+    if request.method == "POST":
+        return search_func(request)
+    else:
+        categories = Categories.objects.all()
+        all_products = list(Product.objects.all())
+        new_products = sample(all_products, 5)
+        shuffle(all_products)
+        top_selling_1 = all_products[:5]
+        top_selling_2 = all_products[6:9]
+        top_selling_3 = all_products[9:12]
+        top_selling_4 = all_products[12:15]
+        return render(request, "index.html", context={"user": user,
+                                                      "categories": categories,
+                                                      "new_products": new_products,
+                                                      "top_selling_1": top_selling_1,
+                                                      "top_selling_2": top_selling_2,
+                                                      "top_selling_3": top_selling_3,
+                                                      "top_selling_4": top_selling_4,
+                                                      "cart": cart})
+
+
+def search(request, product_name, selected_category):
+    try:
+        user = CustomUser.objects.get(username=request.user.username)
+        cart = CartItem.objects.filter(user=user)
+    except CustomUser.DoesNotExist:
+        user = ""
+        cart = ""
+    product_name = product_name.capitalize()
     categories = Categories.objects.all()
-    all_products = list(Product.objects.all())
-    new_products = sample(all_products, 5)
-    shuffle(all_products)
-    top_selling_1 = all_products[:5]
-    top_selling_2 = all_products[6:9]
-    top_selling_3 = all_products[9:12]
-    top_selling_4 = all_products[12:15]
-    return render(request, "index.html", context={"user": user,
-                                                  "categories": categories,
-                                                  "new_products": new_products,
-                                                  "top_selling_1": top_selling_1,
-                                                  "top_selling_2": top_selling_2,
-                                                  "top_selling_3": top_selling_3,
-                                                  "top_selling_4": top_selling_4,
-                                                  "cart": cart})
+    if selected_category == "0":
+        products = Product.objects.filter(name__icontains=product_name)
+    else:
+        products = Product.objects.filter(category__name__iexact=selected_category, name__icontains=product_name)
+    if request.method == "POST":
+        return search_func(request)
+    return render(request, "search.html", context={"products": products,
+                                                   "user": user,
+                                                   "search_query": product_name,
+                                                   "categories": categories,
+                                                   "cart": cart})
 
 
 def signin(request):
@@ -107,23 +130,26 @@ def profile(request, user_id):
     cart = CartItem.objects.filter(user=user)
 
     if request.method == "POST":
-        first_name = request.POST.get("first-name")
-        last_name = request.POST.get("last-name")
-        address = request.POST.get("address")
-        city = request.POST.get("city")
-        country = request.POST.get("country")
-        zip_code = request.POST.get("zip-code")
-        telephone = request.POST.get("tel")
-        user_profile.first_name = first_name
-        user_profile.last_name = last_name
-        user_profile.address = address
-        user_profile.city = city
-        user_profile.country = country
-        user_profile.zip_code = zip_code
-        user_profile.telephone = telephone
-        user_profile.save()
-        messages.info(request, "Data is saved")
-        return redirect("profile")
+        if not request.POST.get("input-select"):
+            first_name = request.POST.get("first-name")
+            last_name = request.POST.get("last-name")
+            address = request.POST.get("address")
+            city = request.POST.get("city")
+            country = request.POST.get("country")
+            zip_code = request.POST.get("zip-code")
+            telephone = request.POST.get("tel")
+            user_profile.first_name = first_name
+            user_profile.last_name = last_name
+            user_profile.address = address
+            user_profile.city = city
+            user_profile.country = country
+            user_profile.zip_code = zip_code
+            user_profile.telephone = telephone
+            user_profile.save()
+            messages.info(request, "Data is saved")
+            return redirect("profile", user_id=user_id)
+        else:
+            return search_func(request)
     else:
         return render(request, "profile.html", context={"user_profile": user_profile,
                                                         "cart": cart,
@@ -166,6 +192,8 @@ def catalog(request):
         user = ""
         cart = ""
         user_profile = ""
+    if request.method == "POST":
+        return search_func(request)
     products = list(Product.objects.all())
     shuffle(products)
     top_selling = products[:3]
@@ -173,7 +201,8 @@ def catalog(request):
     return render(request, "store.html", context={"products": products,
                                                   "top_selling": top_selling,
                                                   "categories": categories,
-                                                  "cart": cart})
+                                                  "cart": cart,
+                                                  "user": user})
 
 
 def product(request, product_id, category):
@@ -185,6 +214,8 @@ def product(request, product_id, category):
         user = ""
         cart = ""
         user_profile = ""
+    if request.method == "POST":
+        return search_func(request)
     single_product = Product.objects.get(id=product_id)
     similar_products = list(Product.objects.filter(category=single_product.category))
     similar_products.remove(single_product)
@@ -195,7 +226,8 @@ def product(request, product_id, category):
                                                     "related_products": related_products,
                                                     "category": category,
                                                     "categories": categories,
-                                                    "cart": cart
+                                                    "cart": cart,
+                                                    "user": user
                                                     })
 
 
@@ -208,20 +240,28 @@ def category(request):
         user = ""
         cart = ""
         user_profile = ""
+    if request.method == "POST":
+        return search_func(request)
     categories = {"/laptops": "Laptops",
                   "/smartphones": "Smartphones",
                   "/accessories": "Accessories",
                   "/headphones": "Headphones",
                   "/cameras": "Cameras"}
+
     all_categories = Categories.objects.all()
-    main_category = Categories.objects.get(name=categories[request.get_full_path()])
+    print(request.get_full_path().split("?")[0])
+    main_category = Categories.objects.get(name__icontains=categories[request.get_full_path().split("?")[0]])
     products = Product.objects.filter(category=main_category)
     top_selling = list(products)[:3]
+    if "sorting" in request.GET:
+        if request.GET.get("sorting", "price"):
+            products = products.order_by("price")
     return render(request, "category.html", context={"products": products,
                                                      "category": main_category.name,
                                                      "categories": all_categories,
                                                      "top_selling": top_selling,
-                                                     "cart": cart})
+                                                     "cart": cart,
+                                                     "user": user})
 
 
 def add_to_cart(request, product_id):
@@ -239,6 +279,7 @@ def add_to_cart(request, product_id):
     product_object.save()
 
     return JsonResponse({'message': 'Item added to cart.',
+                         'quantity_in_stock': str(product_object.quantity),
                          'quantity': str(cart_item.quantity),
                          'image': str(cart_item.product.image.url),
                          'id': str(cart_item.product.id),
@@ -246,6 +287,15 @@ def add_to_cart(request, product_id):
                          'category': str(cart_item.product.category.name),
                          'name': str(cart_item.product.name)
                          })
+
+
+def delete_from_cart(request, product_id):
+    product_obj = Product.objects.get(id=product_id)
+    cart_item = CartItem.objects.get(user=request.user, product=product_obj)
+    product_obj.quantity = cart_item.quantity
+    cart_item.delete()
+    return JsonResponse({'quantity': str(cart_item.quantity),
+                         'price': str(cart_item.product.price)})
 
 
 def check_cart(request):
@@ -257,19 +307,19 @@ def check_cart(request):
     return JsonResponse({'cart_len': cart_len})
 
 
-def remove_from_cart(request, product_id):
-    user_object = request.user
-    product_object = Product.objects.get(id=product_id)
-    cart_item = CartItem.objects.get(user=user_object, product=product_object)
-    cart_item.quantity -= 1
-    product_object.quantity += 1
-    quantity = str(cart_item.quantity)
-    if not cart_item.quantity:
-        cart_item.delete()
-    else:
-        cart_item.save()
-    product_object.save()
-    return JsonResponse({"quantity": quantity})
+# def remove_from_cart(request, product_id):
+#     user_object = request.user
+#     product_object = Product.objects.get(id=product_id)
+#     cart_item = CartItem.objects.get(user=user_object, product=product_object)
+#     cart_item.quantity -= 1
+#     product_object.quantity += 1
+#     quantity = str(cart_item.quantity)
+#     if not cart_item.quantity:
+#         cart_item.delete()
+#     else:
+#         cart_item.save()
+#     product_object.save()
+#     return JsonResponse({"quantity": quantity})
 
 
 @login_required(login_url="signin")
