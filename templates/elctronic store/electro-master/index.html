@@ -99,12 +99,13 @@
 													<i class="fa fa-star"></i>
 												</div>
 												<div class="product-btns">
-													<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
-													<button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
+													<button class="add-to-wishlist" id-product="{{product.id}}"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
 												</div>
 											</div>
 											<div class="add-to-cart">
-												<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+												<a href="{% url 'product' product_id=product.id category=product.category.name%}">
+													<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i>Details</button>
+												</a>
 											</div>
 										</div>
 										{% endfor %}
@@ -223,7 +224,9 @@
 												</div>
 											</div>
 											<div class="add-to-cart">
-												<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+												<a href="{% url 'product' product_id=product.id category=product.category.name%}">
+													<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i>Details</button>
+												</a>
 											</div>
 										</div>
 										{% endfor%}

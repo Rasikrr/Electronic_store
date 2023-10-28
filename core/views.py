@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.models import User, auth
 from .models import CustomUser, Profile, Categories, Product, CartItem, WishListItem
@@ -195,19 +196,42 @@ def catalog(request):
     if request.method == "POST":
         return search_func(request)
     products = Product.objects.all()
+    top_selling = sample(list(products), 3)
+    selected_categories = [category for category in request.GET if request.GET.get(category) and category in ("laptops", "smartphones", "cameras", "accessories")]
+    category_filters = Q()
+    for cat in selected_categories:
+        category_filters |= Q(category__name=cat)
+    products = products.filter(category_filters, price__range=(request.GET.get('price-min', 0), request.GET.get('price-max', 5000)))
+    print("selected", selected_categories)
     if "sorting" in request.GET:
+        print(products)
         sorting_option = request.GET.get("sorting", None)
         if sorting_option == "asc-price":
             products = products.order_by("price")
         elif sorting_option == "desc-price":
             products = products.order_by("-price")
-    top_selling = sample(list(products), 3)
     categories = Categories.objects.all()
+    laptops_count = Product.objects.filter(category__name="laptops").count()
+    smartphones_count = Product.objects.filter(category__name="smartphones").count()
+    cameras_count = Product.objects.filter(category__name="cameras").count()
+    accessories_count = Product.objects.filter(category__name="accessories").count()
+    print(request.GET.get("price-min"), request.GET.get("price-max"))
     return render(request, "store.html", context={"products": products,
                                                   "top_selling": top_selling,
                                                   "categories": categories,
                                                   "cart": cart,
-                                                  "user": user})
+                                                  "user": user,
+                                                  "laptops_count": laptops_count,
+                                                  "smartphones_count": smartphones_count,
+                                                  "cameras_count": cameras_count,
+                                                  "accessories_count": accessories_count,
+                                                  "laptops_selected": 1 if "laptops" in selected_categories else 0,
+                                                  "cameras_selected": 1 if "cameras" in selected_categories else 0,
+                                                  "smartphones_selected": 1 if "smartphones" in selected_categories else 0,
+                                                  "accessories_selected": 1 if "accessories" in selected_categories else 0,
+                                                  "price_min": request.GET.get("price-min"),
+                                                  "price_max": request.GET.get("price-max")
+                                                  })
 
 
 def product(request, product_id, category):
@@ -256,7 +280,7 @@ def category(request):
     all_categories = Categories.objects.all()
     print(request.get_full_path().split("?")[0])
     main_category = Categories.objects.get(name__icontains=categories[request.get_full_path().split("?")[0]])
-    products = Product.objects.filter(category=main_category)
+    products = Product.objects.filter(category=main_category, price__range=(request.GET.get("price-min", 1), request.GET.get("price-max", 5000)))
     top_selling = list(products)[:3]
     if "sorting" in request.GET:
         sorting_option = request.GET.get("sorting", None)
@@ -270,20 +294,6 @@ def category(request):
                                                      "top_selling": top_selling,
                                                      "cart": cart,
                                                      "user": user,
-                                                     })
-
-
-def wishlist(request, user_id):
-    try:
-        user = CustomUser.objects.get(username=request.user.username)
-        cart = CartItem.objects.filter(user=user)
-        user_profile = Profile.objects.get(user=user)
-    except CustomUser.DoesNotExist:
-        user = ""
-        cart = ""
-        user_profile = ""
-    return render(request, "wishlist.html", context={"user": user,
-                                                     "cart": cart,
                                                      })
 
 
@@ -310,6 +320,17 @@ def add_to_cart(request, product_id):
                          'category': str(cart_item.product.category.name),
                          'name': str(cart_item.product.name)
                          })
+
+
+def wishlist(request, product_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'message': 'You have to sign in before adding item to cart'})
+    user_object = request.user
+    product_object = Product.objects.get(id=product_id)
+    wishlist_item, created = WishListItem.objects.get_or_create(user=user_object, product=product_object)
+
+
+
 
 
 def delete_from_cart(request, product_id):
@@ -339,19 +360,19 @@ def check_wishlist(request):
     return JsonResponse({'wishlist_len': wishlist_len})
 
 
-# def remove_from_cart(request, product_id):
-#     user_object = request.user
-#     product_object = Product.objects.get(id=product_id)
-#     cart_item = CartItem.objects.get(user=user_object, product=product_object)
-#     cart_item.quantity -= 1
-#     product_object.quantity += 1
-#     quantity = str(cart_item.quantity)
-#     if not cart_item.quantity:
-#         cart_item.delete()
-#     else:
-#         cart_item.save()
-#     product_object.save()
-#     return JsonResponse({"quantity": quantity})
+def remove_from_cart(request, product_id):
+    user_object = request.user
+    product_object = Product.objects.get(id=product_id)
+    cart_item = CartItem.objects.get(user=user_object, product=product_object)
+    cart_item.quantity -= 1
+    product_object.quantity += 1
+    quantity = str(cart_item.quantity)
+    if not cart_item.quantity:
+        cart_item.delete()
+    else:
+        cart_item.save()
+    product_object.save()
+    return JsonResponse({"quantity": quantity})
 
 
 @login_required(login_url="signin")

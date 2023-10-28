@@ -31,166 +31,115 @@
 					<!-- ASIDE -->
 					<div id="aside" class="col-md-3">
 						<!-- aside Widget -->
-						<div class="aside">
-							<h3 class="aside-title">Categories</h3>
-							<div class="checkbox-filter">
+						<form method="GET">
+								<div class="aside">
+									<h3 class="aside-title">Categories</h3>
+									<div class="checkbox-filter">
 
-								<div class="input-checkbox">
-									<input type="checkbox" id="category-1">
-									<label for="category-1">
-										<span></span>
-										Laptops
-										<small>(120)</small>
-									</label>
-								</div>
+										<div class="input-checkbox">
+											<input type="checkbox" id="category-1" name="laptops" {% if laptops_selected %} checked {% endif %}>
+											<label for="category-1">
+												<span></span>
+												Laptops
+												<small>({{laptops_count}})</small>
+											</label>
+										</div>
 
-								<div class="input-checkbox">
-									<input type="checkbox" id="category-2">
-									<label for="category-2">
-										<span></span>
-										Smartphones
-										<small>(740)</small>
-									</label>
-								</div>
+										<div class="input-checkbox">
+											<input type="checkbox" id="category-2" name="smartphones" {% if smartphones_selected %} checked {% endif %}>
+											<label for="category-2">
+												<span></span>
+												Smartphones
+												<small>({{smartphones_count}})</small>
+											</label>
+										</div>
 
-								<div class="input-checkbox">
-									<input type="checkbox" id="category-3">
-									<label for="category-3">
-										<span></span>
-										Cameras
-										<small>(1450)</small>
-									</label>
-								</div>
+										<div class="input-checkbox">
+											<input type="checkbox" id="category-3" name="cameras" {% if cameras_selected %} checked {% endif %}>
+											<label for="category-3">
+												<span></span>
+												Cameras
+												<small>({{cameras_count}})</small>
+											</label>
+										</div>
 
-								<div class="input-checkbox">
-									<input type="checkbox" id="category-4">
-									<label for="category-4">
-										<span></span>
-										Accessories
-										<small>(578)</small>
-									</label>
+										<div class="input-checkbox">
+											<input type="checkbox" id="category-4" name="accessories" {% if accessories_selected %} checked {% endif %}>
+											<label for="category-4">
+												<span></span>
+												Accessories
+												<small>({{accessories_count}})</small>
+											</label>
+										</div>
+									</div>
 								</div>
+							<!-- /aside Widget -->
+
+							<!-- aside Widget -->
+								<div class="aside">
+									<h3 class="aside-title">Price</h3>
+									<div class="price-filter">
+										<div id="price-slider"></div>
+										<div class="input-number price-min">
+											<input id="price-min" type="number" min="1" max="5000" value="{{price_min}}" name="price-min">
+											<span class="qty-up">+</span>
+											<span class="qty-down">-</span>
+										</div>
+										<span>-</span>
+										<div class="input-number price-max">
+											<input id="price-max" type="number" min="1" max="5000" value="{{price_max}}" name="price-max">
+											<span class="qty-up">+</span>
+											<span class="qty-down">-</span>
+										</div>
+									</div>
+								</div>
+							<!-- /aside Widget -->
+
+							<!-- aside Widget -->
+
+							<!-- /aside Widget -->
+								<button class="add-to-cart-btn" style="margin: 10px 20px; padding: 7px 20px; color: white; background-color: rgb(139, 66, 167); border: none; border-radius: 2%; font-weight: bold" >APPLY</button>
+							<!-- aside Widget -->
+							<div class="aside">
+								<h3 class="aside-title">Top selling</h3>
+								{% for product in top_selling %}
+								<div class="product-widget">
+									<div class="product-img">
+										<img src="{{product.image.url}}" alt="{{product.name}}">
+									</div>
+									<div class="product-body">
+										<p class="product-category">{{product.category.name}}</p>
+										<a href="{% url 'product' product_id=product.id category=product.category.name%}">
+											<h3 class="product-name"><a href="#">{{product.name}}</a></h3>
+										</a>
+										<a href="{% url 'product' product_id=product.id category=product.category.name%}">
+											<h4 class="product-price">${{product.price}}<del class="product-old-price">${{product.price}}</del></h4>
+										</a>
+									</div>
+								</div>
+								{% endfor %}
 							</div>
+							<!-- /aside Widget -->
 						</div>
-						<!-- /aside Widget -->
+						<!-- /ASIDE -->
 
-						<!-- aside Widget -->
-						<div class="aside">
-							<h3 class="aside-title">Price</h3>
-							<div class="price-filter">
-								<div id="price-slider"></div>
-								<div class="input-number price-min">
-    								<input id="price-min" type="number" min="1" max="1999" value="1">
-									<span class="qty-up">+</span>
-									<span class="qty-down">-</span>
+						<!-- STORE -->
+						<div id="store" class="col-md-9">
+							<!-- store top filter -->
+	<!--						<form method="GET" class="filters">-->
+								<div class="store-filter clearfix">
+									<div class="store-sort">
+										<label>
+											Sort By:
+											<select class="input-select" name="sorting">
+												<option value="none" {% if request.GET.sorting == "none" %} selected {% endif %} >None</option>
+												<option value="asc-price" {% if request.GET.sorting == "asc-price" %} selected {% endif %}>Ascending price</option>
+												<option value="desc-price" {% if request.GET.sorting == "desc-price" %} selected {% endif %}>Descending price</option>
+											</select>
+											<button type="submit" class="input-select" style="background-color: rgb(139, 66, 167); color: white; font-weight: bold">Accept</button>
+										</label>
+									</div>
 								</div>
-								<span>-</span>
-								<div class="input-number price-max">
-									<input id="price-max" type="number" min="1" max="1999" value="1">
-									<span class="qty-up">+</span>
-									<span class="qty-down">-</span>
-								</div>
-							</div>
-						</div>
-						<!-- /aside Widget -->
-
-						<!-- aside Widget -->
-						<div class="aside">
-							<h3 class="aside-title">Brand</h3>
-							<div class="checkbox-filter">
-								<div class="input-checkbox">
-									<input type="checkbox" id="brand-1">
-									<label for="brand-1">
-										<span></span>
-										SAMSUNG
-										<small>(578)</small>
-									</label>
-								</div>
-								<div class="input-checkbox">
-									<input type="checkbox" id="brand-2">
-									<label for="brand-2">
-										<span></span>
-										LG
-										<small>(125)</small>
-									</label>
-								</div>
-								<div class="input-checkbox">
-									<input type="checkbox" id="brand-3">
-									<label for="brand-3">
-										<span></span>
-										SONY
-										<small>(755)</small>
-									</label>
-								</div>
-								<div class="input-checkbox">
-									<input type="checkbox" id="brand-4">
-									<label for="brand-4">
-										<span></span>
-										SAMSUNG
-										<small>(578)</small>
-									</label>
-								</div>
-								<div class="input-checkbox">
-									<input type="checkbox" id="brand-5">
-									<label for="brand-5">
-										<span></span>
-										LG
-										<small>(125)</small>
-									</label>
-								</div>
-								<div class="input-checkbox">
-									<input type="checkbox" id="brand-6">
-									<label for="brand-6">
-										<span></span>
-										SONY
-										<small>(755)</small>
-									</label>
-								</div>
-							</div>
-						</div>
-						<!-- /aside Widget -->
-						<button class="add-to-cart-btn" style="margin: 10px 20px; padding: 7px 20px; color: white; background-color: rgb(139, 66, 167); border: none; border-radius: 2%; font-weight: bold" >APPLY</button>
-						<!-- aside Widget -->
-						<div class="aside">
-							<h3 class="aside-title">Top selling</h3>
-							{% for product in top_selling %}
-							<div class="product-widget">
-								<div class="product-img">
-									<img src="{{product.image.url}}" alt="{{product.name}}">
-								</div>
-								<div class="product-body">
-									<p class="product-category">{{product.category.name}}</p>
-									<a href="{% url 'product' product_id=product.id category=product.category.name%}">
-										<h3 class="product-name"><a href="#">{{product.name}}</a></h3>
-									</a>
-									<a href="{% url 'product' product_id=product.id category=product.category.name%}">
-										<h4 class="product-price">${{product.price}}<del class="product-old-price">${{product.price}}</del></h4>
-									</a>
-								</div>
-							</div>
-							{% endfor %}
-						</div>
-						<!-- /aside Widget -->
-					</div>
-					<!-- /ASIDE -->
-
-					<!-- STORE -->
-					<div id="store" class="col-md-9">
-						<!-- store top filter -->
-						<form method="GET" class="filters">
-							<div class="store-filter clearfix">
-								<div class="store-sort">
-									<label>
-										Sort By:
-										<select class="input-select" name="sorting">
-											<option value="none" {% if request.GET.sorting == "none" %} selected {% endif %} >None</option>
-											<option value="asc-price" {% if request.GET.sorting == "asc-price" %} selected {% endif %}>Ascending price</option>
-											<option value="desc-price" {% if request.GET.sorting == "desc-price" %} selected {% endif %}>Descending price</option>
-										</select>
-										<button type="submit" class="input-select" style="background-color: rgb(139, 66, 167); color: white; font-weight: bold">Accept</button>
-									</label>
-								</div>
-							</div>
 						</form>
 						<!-- /store top filter -->
 
@@ -224,7 +173,8 @@
 									</div>
 									<div class="add-to-cart">
 										<a href="{% url 'product' product_id=product.id category=product.category.name%}">
-											<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+											<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i>Details</button>
+											<button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i>Details</button>
 										</a>
 									</div>
 								</div>

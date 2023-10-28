@@ -150,49 +150,49 @@ document.addEventListener("DOMContentLoaded", function (){
 });
 
 
-document.addEventListener("DOMContentLoaded",
-	function () {
-		const DeleteFromCart = document.querySelectorAll(".delete")
-		DeleteFromCart.forEach(button => {
-			button.addEventListener("click", function () {
-				const productId = button.getAttribute("data-product-id");
-				const cartList = document.querySelector(".cart-list");
-				function delete_from_cart(productId) {
-					fetch(`/delete_from_cart/${productId}`)
-						.then(response => response.json())
-						.then(data => {
-							quantity = Number(data.quantity)
-							price = Number(data.price)
-							cartList.removeChild(button.parentNode)
-							ChangeOverallPrice(price * quantity)
-						});
-				}
+document.addEventListener("DOMContentLoaded", function () {
+    const cartList = document.querySelector(".cart-list");
 
-				delete_from_cart(productId);
-				changeCartLength();
-				console.log(productId);
-				console.log(button.parentNode)
-			});
-		});
+    cartList.addEventListener("click", function (event) {
+        const button = event.target.closest(".delete");
+        if (button) {
+            const productId = button.getAttribute("data-product-id");
 
-		function ChangeOverallPrice(price) {
-			const CartOverall = document.getElementById("cart-overall")
-			let CurrentOverall = Number(CartOverall.textContent.substring(11, CartOverall.textContent.length))
-			CurrentOverall -= price;
-			CartOverall.textContent = `SUBTOTAL: $${CurrentOverall}`;
-		}
+            function delete_from_cart(productId) {
+                fetch(`/delete_from_cart/${productId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const quantity = Number(data.quantity);
+                        const price = Number(data.price);
+                        button.parentNode.remove(); // Удаляем родительский узел кнопки
+                        ChangeOverallPrice(price * quantity);
+                        changeCartLength();
+                    });
+            }
 
-		function changeCartLength() {
-			const cartLen = document.getElementById("cart-len")
-			const itemSelected = document.querySelector(".item-selected")
-			const NewCartLen = Number(cartLen.textContent) - 1
-			cartLen.textContent = NewCartLen;
-			itemSelected.textContent = `${NewCartLen} Item(s) selected`
-			if(NewCartLen == "0"){
-				cartLen.style.display = "none";
-			}
-		}
-	});
+            delete_from_cart(productId);
+            console.log(productId);
+        }
+    });
+
+    function ChangeOverallPrice(price) {
+        const CartOverall = document.getElementById("cart-overall");
+        let CurrentOverall = Number(CartOverall.textContent.substring(11));
+        CurrentOverall -= price;
+        CartOverall.textContent = `SUBTOTAL: $${CurrentOverall}`;
+    }
+
+    function changeCartLength() {
+        const cartLen = document.getElementById("cart-len");
+        const itemSelected = document.querySelector(".item-selected");
+        const NewCartLen = Number(cartLen.textContent) - 1;
+        cartLen.textContent = NewCartLen;
+        itemSelected.textContent = `${NewCartLen} Item(s) selected`;
+        if (NewCartLen === 0) {
+            cartLen.style.display = "none";
+        }
+    }
+});
 
 
 document.addEventListener("DOMContentLoaded", function (){
@@ -208,4 +208,51 @@ document.addEventListener("DOMContentLoaded", function (){
 			});
 		}
 	check_wishlist();
+});
+
+document.addEventListener("DOMContentLoaded", function(){
+	let priceMin = document.getElementById("price-min");
+	let priceMax = document.getElementById("price-max");
+	let priceSlider = document.getElementById("price-slider");
+
+	function getQueryParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return {
+            priceMin: urlParams.get('price-min'),
+            priceMax: urlParams.get('price-max')
+        };
+    }
+	const queryParams = getQueryParams()
+	if (queryParams.priceMin && queryParams.priceMax) {
+        priceMin.value = queryParams.priceMin;
+        priceMax.value = queryParams.priceMax;
+		const minVal = parseInt(queryParams.priceMin);
+        const maxVal = parseInt(queryParams.priceMax);
+		priceSlider.noUiSlider.set([minVal, maxVal])
+	}
+
+});
+
+document.addEventListener("DOMContentLoaded", function(){
+	const addToWishlistButtons = document.querySelectorAll(".add-to-wishlist");
+	addToWishlistButtons.forEach(button => {
+		button.addEventListener('click', function(){
+			const productId = button.getAttribute("id-product");
+			let heartIcon = button.querySelector('i');
+			let heartIconClassList = heartIcon.classList
+			if(heartIconClassList[1] == "fa-heart-o"){
+				heartIconClassList.remove("fa-heart-o");
+				heartIconClassList.add("fa-heart")
+			} else {
+				heartIconClassList.remove("fa-heart");
+				heartIconClassList.add("fa-heart-o")
+			}
+			heartIcon.classList = heartIconClassList;
+			fetch(`/wishlist/${productId}`)
+				.then(response => response.json())
+				.then(data => {
+
+				});
+		});
+	});
 });
