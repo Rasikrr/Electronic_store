@@ -177,17 +177,21 @@
 					<!-- STORE -->
 					<div id="store" class="col-md-9">
 						<!-- store top filter -->
-						<div class="store-filter clearfix">
-							<div class="store-sort">
-								<label>
-									Sort By:
-									<select class="input-select">
-										<option value="0">Price</option>
-										<option value="1"></option>
-									</select>
-								</label>
+						<form method="GET" class="filters">
+							<div class="store-filter clearfix">
+								<div class="store-sort">
+									<label>
+										Sort By:
+										<select class="input-select" name="sorting">
+											<option value="none" {% if request.GET.sorting == "none" %} selected {% endif %} >None</option>
+											<option value="asc-price" {% if request.GET.sorting == "asc-price" %} selected {% endif %}>Ascending price</option>
+											<option value="desc-price" {% if request.GET.sorting == "desc-price" %} selected {% endif %}>Descending price</option>
+										</select>
+										<button type="submit" class="input-select" style="background-color: rgb(139, 66, 167); color: white; font-weight: bold">Accept</button>
+									</label>
+								</div>
 							</div>
-						</div>
+						</form>
 						<!-- /store top filter -->
 
 						<!-- store products -->

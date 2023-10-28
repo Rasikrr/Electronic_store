@@ -12,6 +12,7 @@
 
 		<!-- Google font -->
 		<link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700" rel="stylesheet">
+  		<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=DM+Sans&amp;display=swap'><link rel="stylesheet" href="./style.css">
 
 		<!-- Bootstrap -->
 		<link type="text/css" rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}"/>
@@ -28,6 +29,7 @@
 
 		<!-- Custom stlylesheet -->
 		<link type="text/css" rel="stylesheet" href="{% static 'css/style.css' %}"/>
+		<link type="text/css" rel="stylesheet" href="{% static 'css/preloader.css' %}"/>
 
 		<!-- HTML5 shim and Respond.js' %} for IE8 support of HTML5 elements and media queries -->
 		<!-- WARNING: Respond.js' %} doesn't work if you view the page via file:// -->
@@ -38,6 +40,30 @@
 
     </head>
 	<body>
+		<div class="preloader">
+			<svg class="cart" role="img" aria-label="Shopping cart line animation" viewBox="0 0 128 128" width="128px" height="128px" xmlns="http://www.w3.org/2000/svg">
+				<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="8">
+					<g class="cart__track" stroke="hsla(0,10%,10%,0.1)">
+						<polyline points="4,4 21,4 26,22 124,22 112,64 35,64 39,80 106,80" />
+						<circle cx="43" cy="111" r="13" />
+						<circle cx="102" cy="111" r="13" />
+					</g>
+					<g class="cart__lines" stroke="currentColor">
+						<polyline class="cart__top" points="4,4 21,4 26,22 124,22 112,64 35,64 39,80 106,80" stroke-dasharray="338 338" stroke-dashoffset="-338" />
+						<g class="cart__wheel1" transform="rotate(-90,43,111)">
+							<circle class="cart__wheel-stroke" cx="43" cy="111" r="13" stroke-dasharray="81.68 81.68" stroke-dashoffset="81.68" />
+						</g>
+						<g class="cart__wheel2" transform="rotate(90,102,111)">
+							<circle class="cart__wheel-stroke" cx="102" cy="111" r="13" stroke-dasharray="81.68 81.68" stroke-dashoffset="81.68" />
+						</g>
+					</g>
+				</g>
+			</svg>
+			<div class="preloader__text">
+				<p class="preloader__msg">Bringing you the goods…</p>
+				<p class="preloader__msg preloader__msg--last">This is taking long. Something’s wrong.</p>
+			</div>
+		</div>
 		<!-- HEADER -->
 		<header>
 			<!-- TOP HEADER -->
@@ -100,7 +126,7 @@
 							<div class="header-ctn">
 								<!-- Wishlist -->
 								<div>
-									<a href="">
+									<a href="{% url 'wishlist' user_id=user.id %}">
 										<i class="fa fa-heart-o"></i>
 										<span>Your Wishlist</span>
 										<div class="qty" id="wish-list-len">2</div>

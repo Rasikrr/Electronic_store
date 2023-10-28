@@ -194,9 +194,14 @@ def catalog(request):
         user_profile = ""
     if request.method == "POST":
         return search_func(request)
-    products = list(Product.objects.all())
-    shuffle(products)
-    top_selling = products[:3]
+    products = Product.objects.all()
+    if "sorting" in request.GET:
+        sorting_option = request.GET.get("sorting", None)
+        if sorting_option == "asc-price":
+            products = products.order_by("price")
+        elif sorting_option == "desc-price":
+            products = products.order_by("-price")
+    top_selling = sample(list(products), 3)
     categories = Categories.objects.all()
     return render(request, "store.html", context={"products": products,
                                                   "top_selling": top_selling,
@@ -254,14 +259,32 @@ def category(request):
     products = Product.objects.filter(category=main_category)
     top_selling = list(products)[:3]
     if "sorting" in request.GET:
-        if request.GET.get("sorting", "price"):
+        sorting_option = request.GET.get("sorting", None)
+        if sorting_option == "asc-price":
             products = products.order_by("price")
+        elif sorting_option == "desc-price":
+            products = products.order_by("-price")
     return render(request, "category.html", context={"products": products,
                                                      "category": main_category.name,
                                                      "categories": all_categories,
                                                      "top_selling": top_selling,
                                                      "cart": cart,
-                                                     "user": user})
+                                                     "user": user,
+                                                     })
+
+
+def wishlist(request, user_id):
+    try:
+        user = CustomUser.objects.get(username=request.user.username)
+        cart = CartItem.objects.filter(user=user)
+        user_profile = Profile.objects.get(user=user)
+    except CustomUser.DoesNotExist:
+        user = ""
+        cart = ""
+        user_profile = ""
+    return render(request, "wishlist.html", context={"user": user,
+                                                     "cart": cart,
+                                                     })
 
 
 def add_to_cart(request, product_id):
@@ -305,6 +328,15 @@ def check_cart(request):
     except CartItem.DoesNotExist:
         cart_len = 0
     return JsonResponse({'cart_len': cart_len})
+
+
+def check_wishlist(request):
+    try:
+        wishlist = WishListItem.objects.get(user=request.user)
+        wishlist_len = str(wishlist.count())
+    except WishListItem.DoesNotExist:
+        wishlist_len = 0
+    return JsonResponse({'wishlist_len': wishlist_len})
 
 
 # def remove_from_cart(request, product_id):

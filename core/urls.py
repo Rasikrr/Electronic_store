@@ -18,6 +18,8 @@ urlpatterns = [
     # path("remove_from_cart/<int:product_id>", views.remove_from_cart, name="remove_from_cart"),
     path("<str:category>/product/<int:product_id>", views.product, name="product"),
     path("check_cart", views.check_cart, name="check_cart"),
+    path("wishlist/<int:user_id>", views.wishlist, name="wishlist"),
+    path("check_wishlist", views.check_wishlist, name="check_wishlist"),
     path("logout", views.log_out, name="logout")
 ]
 

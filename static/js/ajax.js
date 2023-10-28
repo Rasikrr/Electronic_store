@@ -196,5 +196,16 @@ document.addEventListener("DOMContentLoaded",
 
 
 document.addEventListener("DOMContentLoaded", function (){
-
+	const wishlistObj = document.getElementById("wish-list-len");
+	function check_wishlist(){
+		fetch(`/check_wishlist`)
+			.then(response => response.json())
+			.then(data => {
+				const wishlist_len = data.wishlist_len;
+				if(wishlist_len == "0"){
+					wishlistObj.style.display = "none";
+				}
+			});
+		}
+	check_wishlist();
 });
