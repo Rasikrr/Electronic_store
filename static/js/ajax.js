@@ -204,6 +204,8 @@ document.addEventListener("DOMContentLoaded", function (){
 				const wishlist_len = data.wishlist_len;
 				if(wishlist_len == "0"){
 					wishlistObj.style.display = "none";
+				} else{
+					wishlistObj.textContent = wishlist_len;
 				}
 			});
 		}
@@ -248,11 +250,67 @@ document.addEventListener("DOMContentLoaded", function(){
 				heartIconClassList.add("fa-heart-o")
 			}
 			heartIcon.classList = heartIconClassList;
-			fetch(`/wishlist/${productId}`)
+			fetch(`/add_to_wishlist/${productId}`)
 				.then(response => response.json())
 				.then(data => {
-
+					const is_created = data.is_created;
+					if(is_created == "false"){
+						console.log("false");
+					}else {
+						const message = data.message;
+						const prodName = data.name;
+						const prodPrice = data.price;
+						const prodId = data.id;
+						const prodImage = data.image;
+						const prodCategory = data.category;
+						let wishList = document.querySelector(".wishlist-list"); // Получаем элемент cart-list
+						const wishListItem = createWishListItem(prodId, prodImage, prodPrice, prodName, prodCategory);
+						wishList.appendChild(wishListItem);
+						const wishListQty = document.getElementById("wish-list-len");
+						const wishListItemSelected = document.querySelector(".wishlist-item-selected");
+						changeQty(wishListQty, wishListItemSelected, "add");
+					}
 				});
 		});
 	});
+	function createWishListItem(prodId, prodImage, prodPrice, prodName, prodCategory){
+		// Создаем элемент <div> с классом "product-widget"
+		const productWidget = document.createElement("div");
+		productWidget.className = "product-widget";
+		// Вставляем содержимое шаблона product_widget_template.html, заменяя переменные значениями из контекста
+		productWidget.innerHTML =`
+        <div class="product-widget" id-product="${prodId}">
+			<div class="product-img">
+				<img src="${prodImage}" alt="">
+			</div>
+			<div class="product-body">
+				<h3 class="product-name">
+					<a href="/${prodCategory.toLowerCase()}/product/${prodId}">
+						"${prodName}"
+					</a>
+				</h3>
+			</div>
+			<button class="delete" id-product="${prodId}"><i class="fa fa-close"></i></button>
+		</div>
+		`;
+		return productWidget;
+	}
+
+	function changeQty(wishListQty, wishListItemSelected, add_or_delete){
+		let cur_len = parseInt(wishListQty.textContent);
+		if(add_or_delete == "add"){
+			cur_len += 1;
+		} else{
+			cur_len -= 1;
+		}
+		wishListItemSelected.textContent = `${cur_len} Item(s)`;
+
+		wishListQty.textContent = cur_len;
+	}
+
+	// function ChangePriceOverall(price){
+	// 	const CartOverall = document.getElementById("cart-overall")
+	// 	let CurrentOverall = Number(CartOverall.textContent.substring(11,CartOverall.textContent.length))
+	// 	CartOverall.textContent = `SUBTOTAL: $${CurrentOverall + Number(price)}`;
+	// }
 });

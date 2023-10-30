@@ -63,9 +63,11 @@ def index(request):
     try:
         user = CustomUser.objects.get(username=request.user.username)
         cart = CartItem.objects.filter(user=user)
+        wishlist = WishListItem.objects.filter(user=user)
     except CustomUser.DoesNotExist:
         user = ""
         cart = ""
+        wishlist = ""
     if request.method == "POST":
         return search_func(request)
     else:
@@ -84,7 +86,8 @@ def index(request):
                                                       "top_selling_2": top_selling_2,
                                                       "top_selling_3": top_selling_3,
                                                       "top_selling_4": top_selling_4,
-                                                      "cart": cart})
+                                                      "cart": cart,
+                                                      "wishlist": wishlist})
 
 
 def search(request, product_name, selected_category):
@@ -304,7 +307,6 @@ def add_to_cart(request, product_id):
     user_object = request.user
     product_object = Product.objects.get(id=product_id)
     cart_item, created = CartItem.objects.get_or_create(user=user_object, product=product_object)
-
     if not created:
         cart_item.quantity += 1
         cart_item.save()
@@ -322,12 +324,22 @@ def add_to_cart(request, product_id):
                          })
 
 
-def wishlist(request, product_id):
+def add_to_wishlist(request, product_id):
     if not request.user.is_authenticated:
         return JsonResponse({'message': 'You have to sign in before adding item to cart'})
     user_object = request.user
     product_object = Product.objects.get(id=product_id)
+    is_created = "false"
     wishlist_item, created = WishListItem.objects.get_or_create(user=user_object, product=product_object)
+    if created:
+        is_created = "true"
+    return JsonResponse({"message": "Item added to your wishlist",
+                         "image": str(product_object.image.url),
+                         "name": str(product_object.name),
+                         "price": str(product_object.price),
+                         "id": str(product_object.id),
+                         "category": str(product_object.category),
+                         "is_created": is_created})
 
 
 
@@ -353,10 +365,11 @@ def check_cart(request):
 
 def check_wishlist(request):
     try:
-        wishlist = WishListItem.objects.get(user=request.user)
+        wishlist = WishListItem.objects.filter(user=request.user)
         wishlist_len = str(wishlist.count())
     except WishListItem.DoesNotExist:
         wishlist_len = 0
+    print(wishlist_len)
     return JsonResponse({'wishlist_len': wishlist_len})
 
 
