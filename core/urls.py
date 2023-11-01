@@ -20,6 +20,7 @@ urlpatterns = [
     path("check_cart", views.check_cart, name="check_cart"),
     path("add_to_wishlist/<int:product_id>", views.add_to_wishlist, name="wishlist"),
     path("check_wishlist", views.check_wishlist, name="check_wishlist"),
+    path("successful_checkout/", views.successful_checkout, name="successful_checkout"),
     path("logout", views.log_out, name="logout")
 ]
 

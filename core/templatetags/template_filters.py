@@ -9,3 +9,7 @@ register = template.Library()
 @register.filter(name="mul")
 def mul(value, arg):
     return value*arg
+
+@register.filter(name="filter")
+def filter():
+    return

@@ -196,11 +196,25 @@ def checkout(request, user_id):
         user_profile.zip_code = zip_code
         user_profile.telephone = telephone
         user_profile.save()
+        return redirect("successful_checkout")
     else:
         return render(request, "checkout.html", context={"user_profile": user_profile,
                                                          "cart": cart,
                                                          "cart_total": cart_total,
                                                          "wishlist": wishlist})
+
+
+@login_required(login_url="signin")
+def successful_checkout(request):
+    user = CustomUser.objects.get(username=request.user.username)
+    cart = CartItem.objects.filter(user=user)
+    cart_total = sum(map(lambda x: x.product.price * x.quantity, cart))
+    user_profile = Profile.objects.get(user=user)
+    wishlist = WishListItem.objects.filter(user=user)
+    return render(request, "successful_checkout.html", context={"user_profile": user_profile,
+                                                                "cart": cart,
+                                                                "cart_total": cart_total,
+                                                                "wishlist": wishlist})
 
 
 def catalog(request):
@@ -305,23 +319,38 @@ def category(request):
                   "/cameras": "Cameras"}
 
     all_categories = Categories.objects.all()
-    print(request.get_full_path().split("?")[0])
     main_category = Categories.objects.get(name__icontains=categories[request.get_full_path().split("?")[0]])
-    products = Product.objects.filter(category=main_category, price__range=(request.GET.get("price-min", 1), request.GET.get("price-max", 5000)))
-    top_selling = list(products)[:3]
+    if main_category.name != "Accessories":
+        child_categories = ""
+        products = Product.objects.filter(category=main_category, price__range=(request.GET.get("price-min", 1), request.GET.get("price-max", 5000)))
+        top_selling = list(products)[:3]
+    else:
+        child_categories = Categories.objects.filter(parent=main_category)
+        products = Product.objects.filter(category__in=child_categories, price__range=(request.GET.get("price-min", 1), request.GET.get("price-max", 5000)))
+        top_selling = list(products)[:3]
+        selected_categories = [category for category in request.GET if request.GET.get(category) and category in ("headphones", "smart-watches", "chargers")]
+        category_filters = Q()
+        for cat in selected_categories:
+            category_filters |= Q(category__name=cat)
+        products = products.filter(category_filters)
     if "sorting" in request.GET:
         sorting_option = request.GET.get("sorting", None)
         if sorting_option == "asc-price":
             products = products.order_by("price")
         elif sorting_option == "desc-price":
             products = products.order_by("-price")
+
     return render(request, "category.html", context={"products": products,
                                                      "category": main_category.name,
                                                      "categories": all_categories,
                                                      "top_selling": top_selling,
                                                      "cart": cart,
                                                      "user": user,
-                                                     "wishlist": wishlist
+                                                     "wishlist": wishlist,
+                                                     "child_categories": child_categories,
+                                                     "headphones_checked": 1 if request.GET.get("headphones", None) else 0,
+                                                     "chargers_checked": 1 if request.GET.get("chargers", None) else 0,
+                                                     "smart_watches_checked": 1 if request.GET.get("smart-watches", None) else 0,
                                                      })
 
 

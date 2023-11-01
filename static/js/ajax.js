@@ -356,3 +356,16 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  const totalObj = document.querySelector(".order-total");
+  const total = totalObj.textContent.substring(1, totalObj.textContent.length);
+  const placeOrderBtn = document.getElementById("make-order");
+
+  placeOrderBtn.addEventListener("click", function(e) {
+    if(total == "0") {
+      e.preventDefault();
+      alert("You have to add some items in Your cart before making order");
+    }
+  });
+});
