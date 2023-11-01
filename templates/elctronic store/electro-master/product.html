@@ -125,7 +125,7 @@
 							</div>
 							<div id="message-container"></div>
 							<ul class="product-btns">
-								<li><a href="#"><i class="fa fa-heart-o"></i> add to wishlist</a></li>
+								<button style="border: none; background-color: #fff" class="add-to-wishlist" id-product="{{product.id}}">{% if product.in_wishlist %}<i class="fa fa-heart"></i>{% else %}<i class="fa fa-heart-o"></i>{% endif %}<span class="tooltipp"> add to wishlist</span></button>
 								<li><a href="#"><i class="fa fa-exchange"></i> add to compare</a></li>
 							</ul>
 
@@ -396,8 +396,7 @@
 								<div class="product-rating">
 								</div>
 								<div class="product-btns">
-									<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
-									<button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span></button>
+									<button class="add-to-wishlist" id-product="{{product.id}}">{% if product.in_wishlist %}<i class="fa fa-heart"></i>{% else %}<i class="fa fa-heart-o"></i>{% endif %}<span class="tooltipp">add to wishlist</span></button>
 									<button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span></button>
 								</div>
 							</div>

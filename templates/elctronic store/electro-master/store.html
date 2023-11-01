@@ -110,11 +110,9 @@
 									<div class="product-body">
 										<p class="product-category">{{product.category.name}}</p>
 										<a href="{% url 'product' product_id=product.id category=product.category.name%}">
-											<h3 class="product-name"><a href="#">{{product.name}}</a></h3>
+											<h3 class="product-name">{{product.name}}</a></h3>
 										</a>
-										<a href="{% url 'product' product_id=product.id category=product.category.name%}">
-											<h4 class="product-price">${{product.price}}<del class="product-old-price">${{product.price}}</del></h4>
-										</a>
+										<h4 class="product-price">${{product.price}}<del class="product-old-price">${{product.price}}</del></h4>
 									</div>
 								</div>
 								{% endfor %}
@@ -168,7 +166,7 @@
 											<i class="fa fa-star"></i>
 										</div>
 										<div class="product-btns">
-											<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
+											<button class="add-to-wishlist" id-product="{{product.id}}">{% if product.in_wishlist %}<i class="fa fa-heart"></i>{% else %}<i class="fa fa-heart-o"></i>{% endif %}<span class="tooltipp">add to wishlist</span></button>
 										</div>
 									</div>
 									<div class="add-to-cart">

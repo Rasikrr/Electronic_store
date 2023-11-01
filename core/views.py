@@ -12,8 +12,6 @@ from django.views.generic.edit import CreateView
 from .forms import SignupForm
 from random import shuffle, sample
 
-# Create your views here.
-
 
 def signup(request):
     if request.method == "POST":
@@ -56,6 +54,8 @@ def signup(request):
 def search_func(request):
     search_query = request.POST.get("search-bar")
     selected_category = request.POST.get("input-select")
+    if not search_query:
+        return redirect("catalog")
     return redirect("search", product_name=search_query, selected_category=selected_category)
 
 
@@ -94,22 +94,31 @@ def search(request, product_name, selected_category):
     try:
         user = CustomUser.objects.get(username=request.user.username)
         cart = CartItem.objects.filter(user=user)
+        wishlist = WishListItem.objects.filter(user=user)
     except CustomUser.DoesNotExist:
         user = ""
         cart = ""
+        wishlist = ""
     product_name = product_name.capitalize()
     categories = Categories.objects.all()
     if selected_category == "0":
         products = Product.objects.filter(name__icontains=product_name)
     else:
         products = Product.objects.filter(category__name__iexact=selected_category, name__icontains=product_name)
+    if "sorting" in request.GET:
+        sorting_option = request.GET.get("sorting", None)
+        if sorting_option == "asc-price":
+            products = products.order_by("price")
+        if sorting_option == "desc-price":
+            products = products.order_by("-price")
     if request.method == "POST":
         return search_func(request)
     return render(request, "search.html", context={"products": products,
                                                    "user": user,
                                                    "search_query": product_name,
                                                    "categories": categories,
-                                                   "cart": cart})
+                                                   "cart": cart,
+                                                   "wishlist": wishlist})
 
 
 def signin(request):
@@ -132,6 +141,7 @@ def profile(request, user_id):
     user = request.user
     user_profile = Profile.objects.get(user=user)
     cart = CartItem.objects.filter(user=user)
+    wishlist = WishListItem.objects.filter(user=user)
 
     if request.method == "POST":
         if not request.POST.get("input-select"):
@@ -157,6 +167,7 @@ def profile(request, user_id):
     else:
         return render(request, "profile.html", context={"user_profile": user_profile,
                                                         "cart": cart,
+                                                        "wishlist": wishlist
                                                         })
 
 
@@ -164,9 +175,12 @@ def profile(request, user_id):
 def checkout(request, user_id):
     user = CustomUser.objects.get(username=request.user.username)
     cart = CartItem.objects.filter(user=user)
+    cart_total = sum(map(lambda x: x.product.price*x.quantity, cart))
     user_profile = Profile.objects.get(user=user)
-
+    wishlist = WishListItem.objects.filter(user=user)
     if request.method == "POST":
+        if request.POST.get("search-bar"):
+            return search_func(request)
         first_name = request.POST.get("first-name")
         last_name = request.POST.get("last-name")
         address = request.POST.get("address")
@@ -184,7 +198,9 @@ def checkout(request, user_id):
         user_profile.save()
     else:
         return render(request, "checkout.html", context={"user_profile": user_profile,
-                                                         "cart": cart})
+                                                         "cart": cart,
+                                                         "cart_total": cart_total,
+                                                         "wishlist": wishlist})
 
 
 def catalog(request):
@@ -192,9 +208,11 @@ def catalog(request):
         user = CustomUser.objects.get(username=request.user.username)
         cart = CartItem.objects.filter(user=user)
         user_profile = Profile.objects.get(user=user)
+        wishlist = WishListItem.objects.filter(user=user)
     except CustomUser.DoesNotExist:
         user = ""
         cart = ""
+        wishlist = ""
         user_profile = ""
     if request.method == "POST":
         return search_func(request)
@@ -233,7 +251,8 @@ def catalog(request):
                                                   "smartphones_selected": 1 if "smartphones" in selected_categories else 0,
                                                   "accessories_selected": 1 if "accessories" in selected_categories else 0,
                                                   "price_min": request.GET.get("price-min"),
-                                                  "price_max": request.GET.get("price-max")
+                                                  "price_max": request.GET.get("price-max"),
+                                                  "wishlist": wishlist
                                                   })
 
 
@@ -242,10 +261,12 @@ def product(request, product_id, category):
         user = CustomUser.objects.get(username=request.user.username)
         cart = CartItem.objects.filter(user=user)
         user_profile = Profile.objects.get(user=user)
+        wishlist = WishListItem.objects.filter(user=user)
     except CustomUser.DoesNotExist:
         user = ""
         cart = ""
         user_profile = ""
+        wishlist = ""
     if request.method == "POST":
         return search_func(request)
     single_product = Product.objects.get(id=product_id)
@@ -259,7 +280,8 @@ def product(request, product_id, category):
                                                     "category": category,
                                                     "categories": categories,
                                                     "cart": cart,
-                                                    "user": user
+                                                    "user": user,
+                                                    "wishlist": wishlist
                                                     })
 
 
@@ -268,10 +290,12 @@ def category(request):
         user = CustomUser.objects.get(username=request.user.username)
         cart = CartItem.objects.filter(user=user)
         user_profile = Profile.objects.get(user=user)
+        wishlist = WishListItem.objects.filter(user=user)
     except CustomUser.DoesNotExist:
         user = ""
         cart = ""
         user_profile = ""
+        wishlist = ""
     if request.method == "POST":
         return search_func(request)
     categories = {"/laptops": "Laptops",
@@ -297,6 +321,7 @@ def category(request):
                                                      "top_selling": top_selling,
                                                      "cart": cart,
                                                      "user": user,
+                                                     "wishlist": wishlist
                                                      })
 
 
@@ -342,9 +367,6 @@ def add_to_wishlist(request, product_id):
                          "is_created": is_created})
 
 
-
-
-
 def delete_from_cart(request, product_id):
     product_obj = Product.objects.get(id=product_id)
     cart_item = CartItem.objects.get(user=request.user, product=product_obj)
@@ -352,6 +374,15 @@ def delete_from_cart(request, product_id):
     cart_item.delete()
     return JsonResponse({'quantity': str(cart_item.quantity),
                          'price': str(cart_item.product.price)})
+
+
+def delete_from_wishlist(request, product_id):
+    product_obj = Product.objects.get(id=product_id)
+    wishlist_item = WishListItem.objects.get(user=request.user, product=product_obj)
+    wishlist_item.delete()
+    wishlist_len = WishListItem.objects.filter(user=request.user)
+    return JsonResponse({"message": "Item was deleted",
+                         "wishlist_len": str(wishlist_len.count())})
 
 
 def check_cart(request):

@@ -266,7 +266,7 @@ document.addEventListener("DOMContentLoaded", function(){
 						let wishList = document.querySelector(".wishlist-list"); // Получаем элемент cart-list
 						const wishListItem = createWishListItem(prodId, prodImage, prodPrice, prodName, prodCategory);
 						wishList.appendChild(wishListItem);
-						const wishListQty = document.getElementById("wish-list-len");
+						const wishListQty = document.getElementById("wish-list-len")
 						const wishListItemSelected = document.querySelector(".wishlist-item-selected");
 						changeQty(wishListQty, wishListItemSelected, "add");
 					}
@@ -298,7 +298,15 @@ document.addEventListener("DOMContentLoaded", function(){
 
 	function changeQty(wishListQty, wishListItemSelected, add_or_delete){
 		let cur_len = parseInt(wishListQty.textContent);
+		console.log(cur_len)
+		if(isNaN(cur_len)){
+			console.log("YYYYY")
+			wishListQty.style.display = "inline";
+		}
 		if(add_or_delete == "add"){
+			if(isNaN(cur_len)){
+				cur_len = 0;
+			}
 			cur_len += 1;
 		} else{
 			cur_len -= 1;
@@ -307,10 +315,44 @@ document.addEventListener("DOMContentLoaded", function(){
 
 		wishListQty.textContent = cur_len;
 	}
+});
 
-	// function ChangePriceOverall(price){
-	// 	const CartOverall = document.getElementById("cart-overall")
-	// 	let CurrentOverall = Number(CartOverall.textContent.substring(11,CartOverall.textContent.length))
-	// 	CartOverall.textContent = `SUBTOTAL: $${CurrentOverall + Number(price)}`;
-	// }
+
+document.addEventListener("DOMContentLoaded", function () {
+	const wishList = document.querySelector(".wishlist-list");
+
+	wishList.addEventListener("click", function (event) {
+		const button = event.target.closest(".delete");
+		if (button) {
+			const productId = button.getAttribute("id-product");
+			console.log(productId)
+
+			function delete_from_wishlist(productId) {
+				fetch(`/delete_from_wishlist/${productId}`)
+					.then(response => response.json())
+					.then(data => {
+						const message = data.message;
+						const wishlist_len = data.wishlist_len;
+						changeWishlistLen(wishlist_len);
+						console.log(message);
+						console.log(wishlist_len);
+						button.parentNode.remove(); // Удаляем родительский узел кнопки
+					});
+			}
+
+			delete_from_wishlist(productId);
+			console.log(productId);
+		}
+	});
+	function changeWishlistLen(wishlist_len){
+		const wishlistQty = document.getElementById("wish-list-len");
+		const wishlistItemSelected = document.querySelector(".wishlist-item-selected");
+		wishlistItemSelected.textContent = `${wishlist_len} Item(s)`;
+		if(wishlist_len == "0"){
+			wishlistQty.style.display = "none";
+		} else {
+			wishlistQty.textContent = wishlist_len;
+		}
+	}
+
 });
