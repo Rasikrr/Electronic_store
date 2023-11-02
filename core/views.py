@@ -139,6 +139,7 @@ def signin(request):
 @login_required(login_url="signin")
 def profile(request, user_id):
     user = request.user
+    user_2 = CustomUser.objects.get(id=user_id)
     user_profile = Profile.objects.get(user=user)
     cart = CartItem.objects.filter(user=user)
     wishlist = WishListItem.objects.filter(user=user)
@@ -165,6 +166,8 @@ def profile(request, user_id):
         else:
             return search_func(request)
     else:
+        if user != user_2:
+            return redirect("catalog")
         return render(request, "profile.html", context={"user_profile": user_profile,
                                                         "cart": cart,
                                                         "wishlist": wishlist
@@ -329,17 +332,18 @@ def category(request):
         products = Product.objects.filter(category__in=child_categories, price__range=(request.GET.get("price-min", 1), request.GET.get("price-max", 5000)))
         top_selling = list(products)[:3]
         selected_categories = [category for category in request.GET if request.GET.get(category) and category in ("headphones", "smart-watches", "chargers")]
+        print(selected_categories)
         category_filters = Q()
         for cat in selected_categories:
             category_filters |= Q(category__name=cat)
         products = products.filter(category_filters)
+        # print(products)
     if "sorting" in request.GET:
         sorting_option = request.GET.get("sorting", None)
         if sorting_option == "asc-price":
             products = products.order_by("price")
         elif sorting_option == "desc-price":
             products = products.order_by("-price")
-
     return render(request, "category.html", context={"products": products,
                                                      "category": main_category.name,
                                                      "categories": all_categories,
