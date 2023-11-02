@@ -5,6 +5,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.urls import reverse
 from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.models import User, auth
 from .models import CustomUser, Profile, Categories, Product, CartItem, WishListItem
@@ -139,10 +140,14 @@ def signin(request):
 @login_required(login_url="signin")
 def profile(request, user_id):
     user = request.user
-    user_2 = CustomUser.objects.get(id=user_id)
+    try:
+        user_2 = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        user_2 = None
     user_profile = Profile.objects.get(user=user)
     cart = CartItem.objects.filter(user=user)
     wishlist = WishListItem.objects.filter(user=user)
+    all_categories = Categories.objects.all()
 
     if request.method == "POST":
         if not request.POST.get("input-select"):
@@ -153,6 +158,10 @@ def profile(request, user_id):
             country = request.POST.get("country")
             zip_code = request.POST.get("zip-code")
             telephone = request.POST.get("tel")
+
+            user.first_name = first_name
+            user.last_name = last_name
+
             user_profile.first_name = first_name
             user_profile.last_name = last_name
             user_profile.address = address
@@ -161,26 +170,33 @@ def profile(request, user_id):
             user_profile.zip_code = zip_code
             user_profile.telephone = telephone
             user_profile.save()
+            user.save()
             messages.info(request, "Data is saved")
             return redirect("profile", user_id=user_id)
         else:
             return search_func(request)
     else:
-        if user != user_2:
-            return redirect("catalog")
+        if user != user_2 or user_2 is None:
+            return redirect(reverse("profile", kwargs={"user_id": request.user.id}))
         return render(request, "profile.html", context={"user_profile": user_profile,
                                                         "cart": cart,
-                                                        "wishlist": wishlist
+                                                        "wishlist": wishlist,
+                                                        "categories": all_categories
                                                         })
 
 
 @login_required(login_url="signin")
 def checkout(request, user_id):
     user = CustomUser.objects.get(username=request.user.username)
+    try:
+        user_2 = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        user_2 = None
     cart = CartItem.objects.filter(user=user)
     cart_total = sum(map(lambda x: x.product.price*x.quantity, cart))
     user_profile = Profile.objects.get(user=user)
     wishlist = WishListItem.objects.filter(user=user)
+    all_categories = Categories.objects.all()
     if request.method == "POST":
         if request.POST.get("search-bar"):
             return search_func(request)
@@ -201,10 +217,13 @@ def checkout(request, user_id):
         user_profile.save()
         return redirect("successful_checkout")
     else:
+        if user != user_2 or user_2 is None:
+            return redirect(reverse("checkout", kwargs={"user_id": request.user.id}))
         return render(request, "checkout.html", context={"user_profile": user_profile,
                                                          "cart": cart,
                                                          "cart_total": cart_total,
-                                                         "wishlist": wishlist})
+                                                         "wishlist": wishlist,
+                                                         "categories": all_categories})
 
 
 @login_required(login_url="signin")
@@ -240,9 +259,7 @@ def catalog(request):
     for cat in selected_categories:
         category_filters |= Q(category__name=cat)
     products = products.filter(category_filters, price__range=(request.GET.get('price-min', 0), request.GET.get('price-max', 5000)))
-    print("selected", selected_categories)
     if "sorting" in request.GET:
-        print(products)
         sorting_option = request.GET.get("sorting", None)
         if sorting_option == "asc-price":
             products = products.order_by("price")
@@ -253,7 +270,6 @@ def catalog(request):
     smartphones_count = Product.objects.filter(category__name="smartphones").count()
     cameras_count = Product.objects.filter(category__name="cameras").count()
     accessories_count = Product.objects.filter(category__name="accessories").count()
-    print(request.GET.get("price-min"), request.GET.get("price-max"))
     return render(request, "store.html", context={"products": products,
                                                   "top_selling": top_selling,
                                                   "categories": categories,
@@ -332,12 +348,12 @@ def category(request):
         products = Product.objects.filter(category__in=child_categories, price__range=(request.GET.get("price-min", 1), request.GET.get("price-max", 5000)))
         top_selling = list(products)[:3]
         selected_categories = [category for category in request.GET if request.GET.get(category) and category in ("headphones", "smart-watches", "chargers")]
-        print(selected_categories)
         category_filters = Q()
         for cat in selected_categories:
+            if cat == "smart-watches":
+                cat = "smart watches"
             category_filters |= Q(category__name=cat)
         products = products.filter(category_filters)
-        # print(products)
     if "sorting" in request.GET:
         sorting_option = request.GET.get("sorting", None)
         if sorting_option == "asc-price":
@@ -433,7 +449,6 @@ def check_wishlist(request):
         wishlist_len = str(wishlist.count())
     except WishListItem.DoesNotExist:
         wishlist_len = 0
-    print(wishlist_len)
     return JsonResponse({'wishlist_len': wishlist_len})
 
 
