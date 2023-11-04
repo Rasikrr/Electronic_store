@@ -11,6 +11,7 @@ from django.contrib.auth.models import User, auth
 from .models import CustomUser, Profile, Categories, Product, CartItem, WishListItem
 from django.views.generic.edit import CreateView
 from .forms import SignupForm
+from django.core.paginator import Paginator
 from random import shuffle, sample
 
 
@@ -114,7 +115,11 @@ def search(request, product_name, selected_category):
             products = products.order_by("-price")
     if request.method == "POST":
         return search_func(request)
-    return render(request, "search.html", context={"products": products,
+    paginator = Paginator(products, 6)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
+    return render(request, "search.html", context={"products": page_obj,
+                                                   "page_number": int(page_number),
                                                    "user": user,
                                                    "search_query": product_name,
                                                    "categories": categories,
@@ -256,6 +261,8 @@ def catalog(request):
     top_selling = sample(list(products), 3)
     selected_categories = [category for category in request.GET if request.GET.get(category) and category in ("laptops", "smartphones", "cameras", "accessories")]
     category_filters = Q()
+    if "accessories" in selected_categories:
+        selected_categories += ["headphones", "smart watches", "chargers"]
     for cat in selected_categories:
         category_filters |= Q(category__name=cat)
     products = products.filter(category_filters, price__range=(request.GET.get('price-min', 0), request.GET.get('price-max', 5000)))
@@ -269,8 +276,15 @@ def catalog(request):
     laptops_count = Product.objects.filter(category__name="laptops").count()
     smartphones_count = Product.objects.filter(category__name="smartphones").count()
     cameras_count = Product.objects.filter(category__name="cameras").count()
-    accessories_count = Product.objects.filter(category__name="accessories").count()
-    return render(request, "store.html", context={"products": products,
+    accessories_cat = Categories.objects.get(name="accessories")
+    accessories_count = Product.objects.filter(category__parent=accessories_cat).count()
+    # Pagination
+    paginator = Paginator(products, 6)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
+    print("PAGE", page_number)
+    return render(request, "store.html", context={"products": page_obj,
+                                                  "page_number": int(page_number),
                                                   "top_selling": top_selling,
                                                   "categories": categories,
                                                   "cart": cart,
@@ -360,7 +374,12 @@ def category(request):
             products = products.order_by("price")
         elif sorting_option == "desc-price":
             products = products.order_by("-price")
-    return render(request, "category.html", context={"products": products,
+    # Pagination
+    pagination = Paginator(products, 6)
+    page_number = request.GET.get("page", 1)
+    page_obj = pagination.get_page(page_number)
+    return render(request, "category.html", context={"products": page_obj,
+                                                     "page_number": int(page_number),
                                                      "category": main_category.name,
                                                      "categories": all_categories,
                                                      "top_selling": top_selling,

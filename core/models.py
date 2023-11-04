@@ -9,6 +9,11 @@ class CustomUser(AbstractUser):
     password = models.CharField(max_length=128, verbose_name='password')
     password_2 = models.CharField(max_length=128, verbose_name="password_2")
 
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
+        ordering = []
+
 
 class Profile(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.PROTECT)
@@ -20,6 +25,10 @@ class Profile(models.Model):
     zip_code = models.CharField(max_length=50)
     telephone = models.CharField(max_length=50)
 
+    class Meta:
+        verbose_name = "Профиль"
+        verbose_name_plural = "Профили"
+
 
 class Categories(models.Model):
     name = models.CharField(max_length=50)
@@ -27,6 +36,10 @@ class Categories(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = "Категория"
+        verbose_name_plural = "Категории"
 
 
 class Product(models.Model):
@@ -39,6 +52,11 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = "Товар"
+        verbose_name_plural = "Товары"
+        ordering = ["-price"]
 
 
 class BaseItem(models.Model):
@@ -53,7 +71,16 @@ class CartItem(BaseItem):
     quantity = models.PositiveIntegerField(default=1)
     pass
 
+    class Meta:
+        verbose_name = "Товар корзины пользователя"
+        verbose_name_plural = "Товары корзины пользователей"
+
 
 class WishListItem(BaseItem):
     pass
+
+    class Meta:
+        verbose_name = "Желаемый товар пользователя"
+        verbose_name_plural = "Желаемы товары пользователей"
+
 

@@ -144,6 +144,9 @@
 						<!-- store products -->
 						<div class="row">
 							<!-- product -->
+							{% if not products %}
+							<p style="font-weight: bold; font-size: 25px"> Nothing interesting there </p>
+							{% else %}
 							{% for product in products %}
 							<div class="col-md-4 col-xs-6">
 								<div class="product">
@@ -178,6 +181,7 @@
 							</div>
 							<!-- /product -->
 							{% endfor %}
+							{% endif %}
 						</div>
 						<!-- /store products -->
 
@@ -185,11 +189,23 @@
 						<div class="store-filter clearfix">
 							<span class="store-qty">Showing 20-100 products</span>
 							<ul class="store-pagination">
-								<li class="active">1</li>
-								<li><a href="#">2</a></li>
-								<li><a href="#">3</a></li>
-								<li><a href="#">4</a></li>
-								<li><a href="#"><i class="fa fa-angle-right"></i></a></li>
+								{% if page_number != 1 %}
+									<li><a href="?page={{products.previous_page_number}}"><i class="fa fa-angle-left"></i></a></li>
+								{% endif %}
+								{% for page in products.paginator.page_range %}
+									{% if products.number == page %}
+										<li class="active">
+											<span>{{page}}</span>
+										</li>
+									{% else %}
+										<li>
+											<a href="?page={{page}}">{{page}}</a>
+										</li>
+									{% endif %}
+								{% endfor %}
+								{% if page_number != products.paginator.num_pages %}
+									<li><a href="?page={{products.next_page_number}}"><i class="fa fa-angle-right"></i></a></li>
+								{% endif %}
 							</ul>
 						</div>
 						<!-- /store bottom filter -->
