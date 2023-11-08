@@ -1,8 +1,409 @@
 {% extends "base.html" %}
 {% load static %}
 {% block main%}
+    <div class="container-payment">
+        <div class="printer-top"></div>
+
+        <div class="paper-container">
+            <div class="printer-bottom"></div>
+
+            <div class="paper">
+                <div class="main-contents">
+                    <div class="success-icon">&#10004;</div>
+                    <div class="success-title">
+                        Payment Complete
+                    </div>
+                    <div class="success-description">
+                        Thank you for completing the payment! You will shortly receive an email of your payment.
+                    </div>
+                    <div class="order-details">
+                        <div class="order-number-label">Transaction ID</div>
+                        <div class="order-number">123456789</div>
+                        <div class="complement">Thank You!</div>
+                    </div>
+                </div>
+                <div class="jagged-edge"></div>
+            </div>
+        </div>
+        <a href="{% url 'index' %}"><button class="add-to-cart-btn">Home</button></a>
+    </div>
 {% endblock %}
 
+{% block custom_css %}
+    <style>
+    /*body {*/
+    /*    background: #dcf0fa;*/
+    /*}*/
+
+    .container-payment {
+        max-width: 380px;
+        margin: 50px auto;
+        overflow: hidden;
+        justify-content: center;
+    }
+
+    .printer-top {
+        z-index: 1;
+        border: 6px solid #666666;
+        height: 6px;
+        border-bottom: 0;
+        border-radius: 6px 6px 0 0;
+        background: #333333;
+    }
+
+    .printer-bottom {
+        z-index: 0;
+        border: 6px solid #666666;
+        height: 6px;
+        border-top: 0;
+        border-radius: 0 0 6px 6px;
+        background: #333333;
+    }
+
+    .paper-container {
+        position: relative;
+        overflow: hidden;
+        height: 467px;
+    }
+
+    .paper {
+        background: #ffffff;
+        font-family: 'Poppins', sans-serif;
+        height: 447px;
+        position: absolute;
+        z-index: 2;
+        margin: 0 12px;
+        margin-top: -12px;
+        animation: print 5000ms cubic-bezier(0.68, -0.55, 0.265, 0.9);
+        -moz-animation: print 5000ms cubic-bezier(0.68, -0.55, 0.265, 0.9);
+    }
+
+    .main-contents {
+        margin: 0 12px;
+        padding: 24px;
+    }
+
+    /*// Paper Jagged Edge*/
+    .jagged-edge {
+        position: relative;
+        height: 20px;
+        width: 100%;
+        margin-top: -1px;
+    }
+
+    .jagged-edge:after {
+        content: "";
+        display: block;
+        position: absolute;
+        //bottom: 20px;
+        left: 0;
+        right: 0;
+        height: 20px;
+        background: linear-gradient(45deg,
+            transparent 33.333%,
+            #ffffff 33.333%,
+            #ffffff 66.667%,
+            transparent 66.667%),
+            linear-gradient(-45deg,
+            transparent 33.333%,
+            #ffffff 33.333%,
+            #ffffff 66.667%,
+            transparent 66.667%);
+        background-size: 16px 40px;
+        background-position: 0 -20px;
+    }
+
+    .success-icon {
+        text-align: center;
+        font-size: 48px;
+        height: 72px;
+        background: #359d00;
+        border-radius: 50%;
+        width: 72px;
+        height: 72px;
+        margin: 16px auto;
+        color: #fff;
+    }
+
+    .success-title {
+        font-size: 22px;
+        font-family: 'Poppins', sans-serif;
+        text-align: center;
+        color: #666;
+        font-weight: bold;
+        margin-bottom: 16px;
+    }
+
+    .success-description {
+        font-size: 15px;
+        font-family: 'Poppins', sans-serif;
+        line-height: 21px;
+        color: #999;
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .order-details {
+        text-align: center;
+        color: #333;
+        font-weight: bold;
+
+    }
+
+    .order-number-label {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .order-number {
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        line-height: 48px;
+        font-size: 48px;
+        padding: 8px 0;
+        margin-bottom: 24px;
+    }
+
+    .complement {
+        font-size: 18px;
+        margin-bottom: 8px;
+        color: #32a852;
+    }
+
+    }
+
+    @keyframes print {
+        0% {
+            transform: translateY(-90%);
+        }
+
+        100% {
+            transform: translateY(0%);
+        }
+    }
+
+    @-webkit-keyframes print {
+        0% {
+            -webkit-transform: translateY(-90%);
+        }
+
+        100% {
+            -webkit-transform: translateY(0%);
+        }
+    }
+
+    @-moz-keyframes print {
+        0% {
+            -moz-transform: translateY(-90%);
+        }
+
+        100% {
+            -moz-transform: translateY(0%);
+        }
+    }
+
+    @-ms-keyframes print {
+        0% {
+            -ms-transform: translateY(-90%);
+        }
+
+        100% {
+            -ms-transform: translateY(0%);
+        }
+    }
+    .add-to-cart-btn{
+        position: relative;
+      border: 2px solid transparent;
+      height: 40px;
+      padding: 0 30px;
+      background-color: rgb(139, 66, 167);
+      color: #FFF;
+      text-transform: uppercase;
+      font-weight: 700;
+      border-radius: 40px;
+      -webkit-transition: 0.2s all;
+      transition: 0.2s all;
+        display: block;
+        margin: 0 auto;
+    }
+
+:root {
+	--hue: 223;
+	--bg: hsl(var(--hue),10%,90%);
+	--fg: hsl(var(--hue),10%,10%);
+	--primary: hsl(var(--hue),90%,55%);
+	--trans-dur: 0.3s;
+	font-size: calc(16px + (20 - 16) * (100vw - 320px) / (1280 - 320));
+}
+/*body {*/
+/*	background-color: #FFF;*/
+/*	color: var(--fg);*/
+/*	font: 1em/1.5 "DM Sans", sans-serif;*/
+/*	height: 100vh;*/
+/*	display: grid;*/
+/*	place-items: center;*/
+/*	transition:*/
+/*		background-color var(--trans-dur),*/
+/*		color var(--trans-dur);*/
+/*}*/
+.preloader {
+	text-align: center;
+	width: 100%;
+ 	animation: hidePreloader 0s 0.7s forwards;
+	position: fixed; /* Фиксированная позиция */
+    top: 0;
+    left: 0;
+    width: 100%; /* Занимает всю ширину экрана */
+    height: 100%; /* Занимает всю высоту экрана */
+    background: rgba(255, 255, 255); /* Полупрозрачный фон, чтобы затемнить остальную часть страницы */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* Значение z-index, чтобы прелоадер был поверх всего */
+	animation: fadeOut 6s forwards;
+	pointer-events: none;
+}
+@keyframes fadeOut {
+    from {
+        opacity: 1; /* Начальная прозрачность (видимость) */
+    }
+    to {
+        opacity: 0; /* Конечная прозрачность (исчезновение) */
+    }
+}
+
+@keyframes hidePreloader {
+    to {
+        display: none; /* Скрыть прелоадер после 2 секунд */
+    }
+}
+.preloader__text {
+	position: relative;
+	height: 1.5em;
+}
+.preloader__msg {
+	animation: msg 0.3s 13.7s linear forwards;
+	position: absolute;
+	width: 100%;
+}
+.preloader__msg--last {
+	animation-direction: reverse;
+	animation-delay: 14s;
+	visibility: hidden;
+}
+.cart {
+	display: block;
+	margin: 0 auto 1.5em auto;
+	width: 8em;
+	height: 8em;
+}
+.cart__lines,
+.cart__top,
+.cart__wheel1,
+.cart__wheel2,
+.cart__wheel-stroke {
+	animation: cartLines 1s ease-in-out infinite;
+}
+.cart__lines {
+	stroke: var(--primary);
+}
+.cart__top {
+	animation-name: cartTop;
+}
+.cart__wheel1 {
+	animation-name: cartWheel1;
+	transform: rotate(-0.25turn);
+	transform-origin: 43px 111px;
+}
+.cart__wheel2 {
+	animation-name: cartWheel2;
+	transform: rotate(0.25turn);
+	transform-origin: 102px 111px;
+}
+.cart__wheel-stroke {
+	animation-name: cartWheelStroke
+}
+.cart__track {
+	stroke: hsla(var(--hue),10%,10%,0.1);
+	transition: stroke var(--trans-dur);
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+	:root {
+		--bg: hsl(var(--hue),10%,10%);
+		--fg: hsl(var(--hue),10%,90%);
+	}
+	.cart__track {
+		stroke: hsla(var(--hue),10%,90%,0.1);
+	}
+}
+
+/* Animations */
+@keyframes msg {
+	from {
+		opacity: 1;
+		visibility: visible;
+	}
+	99.9% {
+		opacity: 0;
+		visibility: visible;
+	}
+	to {
+		opacity: 0;
+		visibility: hidden;
+	}
+}
+@keyframes cartLines {
+	from,
+	to {
+		opacity: 0;
+	}
+	8%,
+	92% {
+		opacity: 1;
+	}
+}
+@keyframes cartTop {
+	from {
+		stroke-dashoffset: -338;
+	}
+	50% {
+		stroke-dashoffset: 0;
+	}
+	to {
+		stroke-dashoffset: 338;
+	}
+}
+@keyframes cartWheel1 {
+	from {
+		transform: rotate(-0.25turn);
+	}
+	to {
+		transform: rotate(2.75turn);
+	}
+}
+@keyframes cartWheel2 {
+	from {
+		transform: rotate(0.25turn);
+	}
+	to {
+		transform: rotate(3.25turn);
+	}
+}
+@keyframes cartWheelStroke {
+	from,
+	to {
+		stroke-dashoffset: 81.68;
+	}
+	50% {
+		stroke-dashoffset: 40.84;
+	}
+}
+
+</style>
+
+{% endblock %}
 
 
 

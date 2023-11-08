@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+import re
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
+from django.conf import settings
 from django.db.models import Q
 from django.urls import reverse
 from django.http import JsonResponse, HttpResponse
@@ -11,8 +14,42 @@ from django.contrib.auth.models import User, auth
 from .models import CustomUser, Profile, Categories, Product, CartItem, WishListItem
 from django.views.generic.edit import CreateView
 from .forms import SignupForm
+from inbox import Inbox
 from django.core.paginator import Paginator
 from random import shuffle, sample
+
+inbox = Inbox()
+
+
+def is_positive(string):
+    return re.match(r'^[0-9]+$', string) is not None
+
+
+def email_sender(request):
+    send_mail(
+        "Testing",
+        "Hello, It is Naizagai!",
+        "settings.EMAIL_HOST_USER",
+        [request.POST.get("user-email"),]
+    )
+    print(request.POST.get("user-email"))
+
+
+def default_context(request):
+    try:
+        user = CustomUser.objects.get(username=request.user.username)
+        cart = CartItem.objects.filter(user=user)
+        user_profile = Profile.objects.get(user=user)
+        wishlist = WishListItem.objects.filter(user=user)
+    except CustomUser.DoesNotExist:
+        user = ""
+        cart = ""
+        wishlist = ""
+        user_profile = ""
+    return {"user": user,
+            "cart": cart,
+            "wishlist": wishlist,
+            "user_profile": user_profile}
 
 
 def signup(request):
@@ -62,16 +99,14 @@ def search_func(request):
 
 
 def index(request):
-    try:
-        user = CustomUser.objects.get(username=request.user.username)
-        cart = CartItem.objects.filter(user=user)
-        wishlist = WishListItem.objects.filter(user=user)
-    except CustomUser.DoesNotExist:
-        user = ""
-        cart = ""
-        wishlist = ""
+    context = default_context(request)
     if request.method == "POST":
-        return search_func(request)
+        if request.POST.get("search-bar", None):
+            return search_func(request)
+        if request.POST.get("user-email", None):
+            print("EMAIL")
+            email_sender(request)
+            return redirect("index")
     else:
         categories = Categories.objects.all()
         all_products = list(Product.objects.all())
@@ -81,26 +116,17 @@ def index(request):
         top_selling_2 = all_products[6:9]
         top_selling_3 = all_products[9:12]
         top_selling_4 = all_products[12:15]
-        return render(request, "index.html", context={"user": user,
-                                                      "categories": categories,
-                                                      "new_products": new_products,
-                                                      "top_selling_1": top_selling_1,
-                                                      "top_selling_2": top_selling_2,
-                                                      "top_selling_3": top_selling_3,
-                                                      "top_selling_4": top_selling_4,
-                                                      "cart": cart,
-                                                      "wishlist": wishlist})
+        context["top_selling_1"] = top_selling_1
+        context["top_selling_2"] = top_selling_2
+        context["top_selling_3"] = top_selling_3
+        context["top_selling_4"] = top_selling_4
+        context["categories"] = categories
+        context["new_products"] = new_products
+        return render(request, "index.html", context=context)
 
 
 def search(request, product_name, selected_category):
-    try:
-        user = CustomUser.objects.get(username=request.user.username)
-        cart = CartItem.objects.filter(user=user)
-        wishlist = WishListItem.objects.filter(user=user)
-    except CustomUser.DoesNotExist:
-        user = ""
-        cart = ""
-        wishlist = ""
+    context = default_context(request)
     product_name = product_name.capitalize()
     categories = Categories.objects.all()
     if selected_category == "0":
@@ -118,13 +144,11 @@ def search(request, product_name, selected_category):
     paginator = Paginator(products, 6)
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
-    return render(request, "search.html", context={"products": page_obj,
-                                                   "page_number": int(page_number),
-                                                   "user": user,
-                                                   "search_query": product_name,
-                                                   "categories": categories,
-                                                   "cart": cart,
-                                                   "wishlist": wishlist})
+    context["products"] = page_obj
+    context["page_number"] = page_number
+    context["search_query"] = product_name
+    context["categories"] = categories
+    return render(request, "search.html", context=context)
 
 
 def signin(request):
@@ -149,10 +173,10 @@ def profile(request, user_id):
         user_2 = CustomUser.objects.get(id=user_id)
     except CustomUser.DoesNotExist:
         user_2 = None
-    user_profile = Profile.objects.get(user=user)
-    cart = CartItem.objects.filter(user=user)
-    wishlist = WishListItem.objects.filter(user=user)
+    context = default_context(request)
+    user_profile = context.get("user_profile")
     all_categories = Categories.objects.all()
+    context["all_categories"] = all_categories
 
     if request.method == "POST":
         if not request.POST.get("input-select"):
@@ -163,7 +187,6 @@ def profile(request, user_id):
             country = request.POST.get("country")
             zip_code = request.POST.get("zip-code")
             telephone = request.POST.get("tel")
-
             user.first_name = first_name
             user.last_name = last_name
 
@@ -183,11 +206,7 @@ def profile(request, user_id):
     else:
         if user != user_2 or user_2 is None:
             return redirect(reverse("profile", kwargs={"user_id": request.user.id}))
-        return render(request, "profile.html", context={"user_profile": user_profile,
-                                                        "cart": cart,
-                                                        "wishlist": wishlist,
-                                                        "categories": all_categories
-                                                        })
+        return render(request, "profile.html", context=context)
 
 
 @login_required(login_url="signin")
@@ -198,7 +217,7 @@ def checkout(request, user_id):
     except CustomUser.DoesNotExist:
         user_2 = None
     cart = CartItem.objects.filter(user=user)
-    cart_total = sum(map(lambda x: x.product.price*x.quantity, cart))
+    cart_total = sum(map(lambda x: x.product.price * x.quantity, cart))
     user_profile = Profile.objects.get(user=user)
     wishlist = WishListItem.objects.filter(user=user)
     all_categories = Categories.objects.all()
@@ -233,28 +252,14 @@ def checkout(request, user_id):
 
 @login_required(login_url="signin")
 def successful_checkout(request):
-    user = CustomUser.objects.get(username=request.user.username)
-    cart = CartItem.objects.filter(user=user)
-    cart_total = sum(map(lambda x: x.product.price * x.quantity, cart))
-    user_profile = Profile.objects.get(user=user)
-    wishlist = WishListItem.objects.filter(user=user)
-    return render(request, "successful_checkout.html", context={"user_profile": user_profile,
-                                                                "cart": cart,
-                                                                "cart_total": cart_total,
-                                                                "wishlist": wishlist})
+    context = default_context(request)
+    cart_total = sum(map(lambda x: x.product.price * x.quantity, context["cart"]))
+    context["cart_total"] = cart_total
+    return render(request, "successful_checkout.html", context=context)
 
 
 def catalog(request):
-    try:
-        user = CustomUser.objects.get(username=request.user.username)
-        cart = CartItem.objects.filter(user=user)
-        user_profile = Profile.objects.get(user=user)
-        wishlist = WishListItem.objects.filter(user=user)
-    except CustomUser.DoesNotExist:
-        user = ""
-        cart = ""
-        wishlist = ""
-        user_profile = ""
+    context = default_context(request)
     if request.method == "POST":
         return search_func(request)
     products = Product.objects.all()
@@ -265,7 +270,8 @@ def catalog(request):
         selected_categories += ["headphones", "smart watches", "chargers"]
     for cat in selected_categories:
         category_filters |= Q(category__name=cat)
-    products = products.filter(category_filters, price__range=(request.GET.get('price-min', 0), request.GET.get('price-max', 5000)))
+    products = products.filter(category_filters,
+                               price__range=(request.GET.get('price-min', 0), request.GET.get('price-max', 5000)))
     if "sorting" in request.GET:
         sorting_option = request.GET.get("sorting", None)
         if sorting_option == "asc-price":
@@ -283,37 +289,26 @@ def catalog(request):
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
     print("PAGE", page_number)
-    return render(request, "store.html", context={"products": page_obj,
-                                                  "page_number": int(page_number),
-                                                  "top_selling": top_selling,
-                                                  "categories": categories,
-                                                  "cart": cart,
-                                                  "user": user,
-                                                  "laptops_count": laptops_count,
-                                                  "smartphones_count": smartphones_count,
-                                                  "cameras_count": cameras_count,
-                                                  "accessories_count": accessories_count,
-                                                  "laptops_selected": 1 if "laptops" in selected_categories else 0,
-                                                  "cameras_selected": 1 if "cameras" in selected_categories else 0,
-                                                  "smartphones_selected": 1 if "smartphones" in selected_categories else 0,
-                                                  "accessories_selected": 1 if "accessories" in selected_categories else 0,
-                                                  "price_min": request.GET.get("price-min"),
-                                                  "price_max": request.GET.get("price-max"),
-                                                  "wishlist": wishlist
-                                                  })
+    main_context = {"products": page_obj,
+                    "page_number": int(page_number),
+                    "top_selling": top_selling,
+                    "categories": categories,
+                    "laptops_count": laptops_count,
+                    "smartphones_count": smartphones_count,
+                    "cameras_count": cameras_count,
+                    "accessories_count": accessories_count,
+                    "laptops_selected": 1 if "laptops" in selected_categories else 0,
+                    "cameras_selected": 1 if "cameras" in selected_categories else 0,
+                    "smartphones_selected": 1 if "smartphones" in selected_categories else 0,
+                    "accessories_selected": 1 if "accessories" in selected_categories else 0,
+                    "price_min": request.GET.get("price-min"),
+                    "price_max": request.GET.get("price-max"),
+                    }
+    return render(request, "store.html", context=dict(list(context.items()) + list(main_context.items())))
 
 
 def product(request, product_id, category):
-    try:
-        user = CustomUser.objects.get(username=request.user.username)
-        cart = CartItem.objects.filter(user=user)
-        user_profile = Profile.objects.get(user=user)
-        wishlist = WishListItem.objects.filter(user=user)
-    except CustomUser.DoesNotExist:
-        user = ""
-        cart = ""
-        user_profile = ""
-        wishlist = ""
+    context = default_context(request)
     if request.method == "POST":
         return search_func(request)
     single_product = Product.objects.get(id=product_id)
@@ -322,14 +317,11 @@ def product(request, product_id, category):
     shuffle(similar_products)
     related_products = sample(similar_products, 3)
     categories = Categories.objects.all()
-    return render(request, "product.html", context={"product": single_product,
-                                                    "related_products": related_products,
-                                                    "category": category,
-                                                    "categories": categories,
-                                                    "cart": cart,
-                                                    "user": user,
-                                                    "wishlist": wishlist
-                                                    })
+    context["categories"] = categories
+    context["product"] = single_product
+    context["related_products"] = related_products
+    context["category"] = category
+    return render(request, "product.html", context=context)
 
 
 def category(request):
@@ -355,13 +347,16 @@ def category(request):
     main_category = Categories.objects.get(name__icontains=categories[request.get_full_path().split("?")[0]])
     if main_category.name != "Accessories":
         child_categories = ""
-        products = Product.objects.filter(category=main_category, price__range=(request.GET.get("price-min", 1), request.GET.get("price-max", 5000)))
+        products = Product.objects.filter(category=main_category, price__range=(
+        request.GET.get("price-min", 1), request.GET.get("price-max", 5000)))
         top_selling = list(products)[:3]
     else:
         child_categories = Categories.objects.filter(parent=main_category)
-        products = Product.objects.filter(category__in=child_categories, price__range=(request.GET.get("price-min", 1), request.GET.get("price-max", 5000)))
+        products = Product.objects.filter(category__in=child_categories, price__range=(
+        request.GET.get("price-min", 1), request.GET.get("price-max", 5000)))
         top_selling = list(products)[:3]
-        selected_categories = [category for category in request.GET if request.GET.get(category) and category in ("headphones", "smart-watches", "chargers")]
+        selected_categories = [category for category in request.GET if
+                               request.GET.get(category) and category in ("headphones", "smart-watches", "chargers")]
         category_filters = Q()
         for cat in selected_categories:
             if cat == "smart-watches":
@@ -387,14 +382,16 @@ def category(request):
                                                      "user": user,
                                                      "wishlist": wishlist,
                                                      "child_categories": child_categories,
-                                                     "headphones_checked": 1 if request.GET.get("headphones", None) else 0,
+                                                     "headphones_checked": 1 if request.GET.get("headphones",
+                                                                                                None) else 0,
                                                      "chargers_checked": 1 if request.GET.get("chargers", None) else 0,
-                                                     "smart_watches_checked": 1 if request.GET.get("smart-watches", None) else 0,
+                                                     "smart_watches_checked": 1 if request.GET.get("smart-watches",
+                                                                                                   None) else 0,
                                                      })
 
 
 def add_to_cart(request, product_id):
-    print("-"*100)
+    print("-" * 100)
     if not request.user.is_authenticated:
         return JsonResponse({'message': 'You have to sign in before adding item to cart'})
     user_object = request.user
@@ -486,9 +483,11 @@ def remove_from_cart(request, product_id):
     return JsonResponse({"quantity": quantity})
 
 
+def payment(request):
+    return render(request, "payment.html")
+
+
 @login_required(login_url="signin")
 def log_out(request):
     logout(request)
     return redirect("index")
-
-
