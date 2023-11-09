@@ -238,7 +238,7 @@
 							<span class="store-qty">Showing 20-100 products</span>
 							<ul class="store-pagination">
 								{% if page_number != 1%}
-									<li><a href="?page={{products.previous_page_number}}"><i class="fa fa-angle-left"></i></a></li>
+									<li><a href="?page={{products.previous_page_number}}{% if get_param %}&{{get_param}}{% endif %}"><i class="fa fa-angle-left"></i></a></li>
 								{% endif %}
 								{% for page in products.paginator.page_range %}
 									{% if products.number == page %}
@@ -247,12 +247,12 @@
 										</li>
 									{% else %}
 										<li>
-											<a href="?page={{page}}">{{page}}</a>
+											<a href="?page={{page}}{% if get_param %}&{{get_param}}{% endif %}">{{page}}</a>
 										</li>
 									{% endif %}
 								{% endfor %}
 								{% if page_number != products.paginator.num_pages %}
-									<li><a href="?page={{products.next_page_number}}"><i class="fa fa-angle-right"></i></a></li>
+									<li><a href="?page={{products.next_page_number}}{% if get_param %}&{{get_param}}{% endif %}"><i class="fa fa-angle-right"></i></a></li>
 								{% endif %}
 							</ul>
 						</div>

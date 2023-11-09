@@ -81,6 +81,24 @@ class WishListItem(BaseItem):
 
     class Meta:
         verbose_name = "Желаемый товар пользователя"
-        verbose_name_plural = "Желаемы товары пользователей"
+        verbose_name_plural = "Желаемые товары пользователей"
 
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ("successful", "Successful"),
+        ("failed", "Failed"),
+        ("in_transit", "In transit"),
+        ("delivered", "Delivered")
+    ]
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    cart = models.ForeignKey(CartItem, on_delete=models.CASCADE)
+    creation_date = models.DateTimeField(auto_now=True)
+    overall = models.PositiveIntegerField()
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES)
+
+    class Meta:
+        verbose_name = "Заказ"
+        verbose_name_plural = "Заказы"
 

@@ -239,19 +239,20 @@ def checkout(request, user_id):
         user_profile.zip_code = zip_code
         user_profile.telephone = telephone
         user_profile.save()
-        return redirect("successful_checkout")
+        return redirect("payment", user_id=user_id)
     else:
         if user != user_2 or user_2 is None:
             return redirect(reverse("checkout", kwargs={"user_id": request.user.id}))
         return render(request, "checkout.html", context={"user_profile": user_profile,
                                                          "cart": cart,
+                                                         "user_id": user_id,
                                                          "cart_total": cart_total,
                                                          "wishlist": wishlist,
                                                          "categories": all_categories})
 
 
 @login_required(login_url="signin")
-def successful_checkout(request):
+def successful_checkout(request, user_id):
     context = default_context(request)
     cart_total = sum(map(lambda x: x.product.price * x.quantity, context["cart"]))
     context["cart_total"] = cart_total
@@ -288,7 +289,8 @@ def catalog(request):
     paginator = Paginator(products, 6)
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
-    print("PAGE", page_number)
+    get_params = request.GET.copy()
+    get_params.pop("page", None)
     main_context = {"products": page_obj,
                     "page_number": int(page_number),
                     "top_selling": top_selling,
@@ -303,6 +305,7 @@ def catalog(request):
                     "accessories_selected": 1 if "accessories" in selected_categories else 0,
                     "price_min": request.GET.get("price-min"),
                     "price_max": request.GET.get("price-max"),
+                    "get_params": get_params.urlencode()
                     }
     return render(request, "store.html", context=dict(list(context.items()) + list(main_context.items())))
 
@@ -373,6 +376,8 @@ def category(request):
     pagination = Paginator(products, 6)
     page_number = request.GET.get("page", 1)
     page_obj = pagination.get_page(page_number)
+    get_param = request.GET.copy()
+    get_param.pop("page", None)
     return render(request, "category.html", context={"products": page_obj,
                                                      "page_number": int(page_number),
                                                      "category": main_category.name,
@@ -387,6 +392,7 @@ def category(request):
                                                      "chargers_checked": 1 if request.GET.get("chargers", None) else 0,
                                                      "smart_watches_checked": 1 if request.GET.get("smart-watches",
                                                                                                    None) else 0,
+                                                     "get_param": get_param.urlencode()
                                                      })
 
 
@@ -483,7 +489,7 @@ def remove_from_cart(request, product_id):
     return JsonResponse({"quantity": quantity})
 
 
-def payment(request):
+def payment(request, user_id):
     return render(request, "payment.html")
 
 
