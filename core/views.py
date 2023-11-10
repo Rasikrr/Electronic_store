@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.urls import reverse
 from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.models import User, auth
-from .models import CustomUser, Profile, Categories, Product, CartItem, WishListItem
+from .models import CustomUser, Profile, Categories, Product, CartItem, WishListItem, Order
 from django.views.generic.edit import CreateView
 from .forms import SignupForm
 from inbox import Inbox
@@ -256,6 +256,18 @@ def successful_checkout(request, user_id):
     context = default_context(request)
     cart_total = sum(map(lambda x: x.product.price * x.quantity, context["cart"]))
     context["cart_total"] = cart_total
+    cart = context["cart"]
+    print(cart)
+    user = context["user"]
+    overall = sum([pr.quantity * pr.product.price for pr in cart])
+    order = Order.objects.create(user=user, overall=overall)
+    for cart_item in cart:
+        print(cart_item, "<<")
+        order.cart.add(cart_item)
+        cart_item.delete()
+    cart.delete()
+    context["order_id"] = str(order.id).zfill(9)
+    order.save()
     return render(request, "successful_checkout.html", context=context)
 
 
@@ -490,7 +502,9 @@ def remove_from_cart(request, product_id):
 
 
 def payment(request, user_id):
-    return render(request, "payment.html")
+    context = default_context(request)
+    context["user_id"] = user_id
+    return render(request, "payment.html", context=context)
 
 
 @login_required(login_url="signin")
