@@ -75,6 +75,9 @@ class CartItem(BaseItem):
         verbose_name = "Товар корзины пользователя"
         verbose_name_plural = "Товары корзины пользователей"
 
+    def __str__(self):
+        return f"{self.product.name} - {self.product.category.name}"
+
 
 class WishListItem(BaseItem):
     pass
@@ -84,3 +87,25 @@ class WishListItem(BaseItem):
         verbose_name_plural = "Желаемые товары пользователей"
 
 
+<<<<<<< HEAD
+=======
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ("successful", "Successful"),
+        ("canceled", "Canceled"),
+        ("in_transit", "In transit"),
+        ("delivered", "Delivered")
+    ]
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    cart =
+    creation_date = models.DateTimeField(auto_now=True)
+    overall = models.PositiveIntegerField()
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="Successful")
+
+    class Meta:
+        verbose_name = "Заказ"
+        verbose_name_plural = "Заказы"
+
+# models.ManyToManyField(CartItem, choices=)
+>>>>>>> 2d970827fc8ca2c1fc437060bad7b705901071c1
