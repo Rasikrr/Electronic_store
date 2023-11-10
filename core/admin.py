@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, Profile, Categories, Product, CartItem, WishListItem, Order
+from .models import CustomUser, Profile, Categories, Product, CartItem, WishListItem
 
 # Register your models here.
 
@@ -34,9 +34,6 @@ class WishListAdmin(admin.ModelAdmin):
     list_display_links = list_display
 
 
-class OrderAdmin(admin.ModelAdmin):
-    list_display = ("user", "status", "creation_date", "overall")
-    list_display_links = ("user", "status")
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
@@ -45,4 +42,3 @@ admin.site.register(Categories, CategoryAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(WishListItem, WishListAdmin)
 admin.site.register(CartItem, CartItemAdmin)
-admin.site.register(Order, OrderAdmin)

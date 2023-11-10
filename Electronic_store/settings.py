@@ -85,7 +85,7 @@ WSGI_APPLICATION = 'Electronic_store.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': "el_store",
+        'NAME': "el_store_3",
         'USER': 'root',
         'PASSWORD': 'Rasik_1234',
         'HOST': 'localhost',  # Или IP-адрес сервера MySQL
@@ -113,6 +113,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

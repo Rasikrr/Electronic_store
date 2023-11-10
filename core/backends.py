@@ -1,5 +1,10 @@
 from django.contrib.auth.backends import ModelBackend
 from .models import CustomUser
+from django.contrib.auth.hashers import check_password
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class EmailBackend(ModelBackend):
@@ -11,7 +16,8 @@ class EmailBackend(ModelBackend):
 
         if user.check_password(password):
             return user
-        return None
+        else:
+            return None
 
     def get_user(self, user_id):
         try:

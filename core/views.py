@@ -77,8 +77,8 @@ def signup(request):
             email = cleaned_data["email"]
             username = cleaned_data["username"]
             user_obj = CustomUser.objects.create_user(username=username,
-                                                      email=email, password=make_password(password_1),
-                                                      password_2=make_password(password_2))
+                                                      email=email, password=password_1,
+                                                      password_2=password_2)
             user_obj.save()
             Profile.objects.create(user=user_obj).save()
             login(request, user_obj, backend="core.backends.EmailBackend")
