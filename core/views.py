@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.urls import reverse
 from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.models import User, auth
-from .models import CustomUser, Profile, Categories, Product, CartItem, WishListItem, Order
+from .models import CustomUser, Profile, Categories, Product, CartItem, WishListItem
 from django.views.generic.edit import CreateView
 from .forms import SignupForm
 from inbox import Inbox
@@ -260,14 +260,6 @@ def successful_checkout(request, user_id):
     print(cart)
     user = context["user"]
     overall = sum([pr.quantity * pr.product.price for pr in cart])
-    order = Order.objects.create(user=user, overall=overall)
-    for cart_item in cart:
-        print(cart_item, "<<")
-        order.cart.add(cart_item)
-        cart_item.delete()
-    cart.delete()
-    context["order_id"] = str(order.id).zfill(9)
-    order.save()
     return render(request, "successful_checkout.html", context=context)
 
 

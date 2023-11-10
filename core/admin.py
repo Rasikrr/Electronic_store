@@ -34,8 +34,6 @@ class WishListAdmin(admin.ModelAdmin):
     list_display_links = list_display
 
 
-
-
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(Categories, CategoryAdmin)
