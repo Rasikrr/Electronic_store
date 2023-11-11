@@ -87,3 +87,35 @@ class WishListItem(BaseItem):
         verbose_name_plural = "Желаемые товары пользователей"
 
 
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ("created", "Created"),
+        ("canceled", "Canceled"),
+        ("in transit", "In transit"),
+        ("delivered", "delivered")
+    ]
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    cart_items = models.ManyToManyField(CartItem, blank=True)
+    items_list = models.TextField()
+    total = models.PositiveIntegerField()
+    creation_date = models.DateTimeField(auto_now=True)
+    order_status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="Created")
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.cart_items.clear()
+        cart_items_to_add = CartItem.objects.filter(user=self.user)
+        self.cart_items.set(cart_items_to_add)
+
+    def __str__(self):
+        return f"Order: {self.user.username} {self.creation_date}"
+
+    class Meta:
+        verbose_name = "Заказ"
+        verbose_name_plural = "Заказы"
+
+
+class OrderCartItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    cart_item = models.ForeignKey(CartItem, on_delete=models.CASCADE)
