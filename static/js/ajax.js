@@ -371,6 +371,44 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function(){
+	const first_name = document.getElementById("first-name");
+	const last_name = document.getElementById("last-name");
+	const country = document.getElementById("country");
+	const city = document.getElementById("city");
+	const address = document.getElementById("address");
+	const zip = document.getElementById("zip");
+	const tel = document.getElementById("tel");
+	const email = document.getElementById("email")
+	const placeOrderBtn = document.getElementById("make-order");
+	let inputs = [first_name, last_name, country, city, address, zip, tel, email];
+	placeOrderBtn.addEventListener("click", function(e) {
+		for(let i = 0;i < inputs.length;++i){
+			if(inputs[i].value.trim() === ""){
+				console.log(inputs[i]);
+				e.preventDefault();
+				alert("Please fill the personal information.")
+				break;
+			}
+		}
+	});
+});
 
+document.addEventListener("DOMContentLoaded", function (){
+	const sendBtn = document.getElementById("send-credit-card");
 
+	const cardName = document.getElementById("card-name");
+	const cardNumber = document.getElementById("card-number ");
+	const expMonth = document.getElementById("exp-month");
+	const expYear = document.getElementById("exp-year");
+
+	let inputs = [cardNumber, cardName, expYear, expMonth];
+	sendBtn.addEventListener("click", function (e){
+		for(let i =0;i < inputs.length;++i){
+			if(inputs[i].value.trim() === ""){
+				e.preventDefault();
+				alert("Fill the Card information");
+				break;
+			}
+		}
+	});
 });

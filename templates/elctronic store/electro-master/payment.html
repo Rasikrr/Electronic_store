@@ -8,6 +8,7 @@
     <link rel="icon" href="images/dollar.png" type="image/png" sizes="16x16">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="{% static 'js/ajax.js'%}"></script>
     <script type="application/x-javascript">
         addEventListener("load", function() {
             setTimeout(hideURLbar, 0);
@@ -96,36 +97,36 @@
                                 <div class="tab-1 resp-tab-content" aria-labelledby="tab_item-0">
                                     <div class="payment-info">
                                         <h3 class="pay-title">Credit Card Info</h3>
-                                        <form>
+                                        <form method="POST">
                                             <div class="tab-for">
                                                 <h5>Amount</h5>
-                                                <input class="pay-logo" type="text" value="₹.00" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = '₹.00';}" required="">
+                                                <input class="pay-logo" type="text" value="{{cart_total}}$" onblur="if (this.value == '') {this.value = '₹.00';}" required="" readonly>
                                             </div>
                                             <div class="tab-for">
                                                 <h5>NAME ON CARD</h5>
-                                                 <input class="pay-logo" type="text" value="Enter the name" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Enter the name';}" required="">
+                                                 <input class="pay-logo" id="card-name" type="text" value="" placeholder="Enter the name" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Enter the name';}" required="">
                                                 <h5>CARD NUMBER</h5>
-                                                <input class="pay-logo" type="text" value="0000-0000-0000-0000" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = '0000-0000-0000-0000';}" required="">
+                                                <input class="pay-logo" id="card-number "type="text" value="" placeholder="0000-0000-0000-0000" maxlength="12" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = '0000-0000-0000-0000';}" required="">
                                             </div>
                                             <div class="transaction">
                                                 <div class="tab-form-left user-form">
                                                     <h5>EXPIRATION</h5>
                                                     <ul>
                                                         <li>
-                                                            <input type="number" class="text_box" type="text" value="0" min="1" />
+                                                            <input type="number" id="exp-month" class="text_box" type="text" value="" placeholder="1" min="1" max="12" maxlength="2"/>
                                                         </li>
                                                         <li>
-                                                            <input type="number" class="text_box" type="text" value="2000" min="1" />
+                                                            <input type="number" id="exp-year" class="text_box" type="text" value="" placeholder="2000" min="1" max="3000" maxlength="4"/>
                                                         </li>
                                                     </ul>
                                                 </div>
                                                 <div class="tab-form-right user-form-rt">
                                                     <h5>CVV NUMBER</h5>
-                                                    <input type="password" value="xxx" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'xxx';}" required="">
+                                                    <input type="password" value="" placeholder="xxx" maxlength="3" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'xxx';}" required="">
                                                 </div>
                                                 <div class="clear"></div>
                                             </div>
-                                            <a class="confirm-btn" href="{% url 'successful_checkout' user_id=user_id %}">SEND</a>
+                                            <a class="confirm-btn" id="send-credit-card" href="{% url 'successful_checkout' user_id=user_id %}">SEND</a>
                                         </form>
                                     </div>
                                 </div>
@@ -135,66 +136,33 @@
                                         <div class="radio-btns">
                                             <div class="swit">
                                                 <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio" checked=""><i></i>Andhra Bank</label> </div>
+                                                    <div class="radio"> <label><input type="radio" name="radio" checked=""><i></i>Kaspi</label> </div>
                                                 </div>
                                                 <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Allahabad Bank</label> </div>
+                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Halyk</label> </div>
                                                 </div>
                                                 <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Bank of Baroda</label> </div>
+                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>RBK</label> </div>
                                                 </div>
                                                 <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Canara Bank</label> </div>
+                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>BCC</label> </div>
                                                 </div>
                                                 <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>IDBI Bank</label> </div>
-                                                </div>
-                                                <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>ICICI Bank</label> </div>
-                                                </div>
-                                                <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Indian Overseas Bank</label> </div>
-                                                </div>
-                                                <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Punjab National Bank</label> </div>
-                                                </div>
-                                                <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>South Indian Bank</label> </div>
-                                                </div>
-                                                <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>State Bank Of India</label> </div>
+                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>ForteBank</label> </div>
                                                 </div>
                                             </div>
                                             <div class="swit">
                                                 <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio" checked=""><i></i>City Union Bank</label> </div>
+                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Otbasy Bank</label> </div>
                                                 </div>
                                                 <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>HDFC Bank</label> </div>
+                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Eurasian Bank</label> </div>
                                                 </div>
                                                 <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>IndusInd Bank</label> </div>
+                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Jusan Bank</label> </div>
                                                 </div>
                                                 <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Syndicate Bank</label> </div>
-                                                </div>
-                                                <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Deutsche Bank</label> </div>
-                                                </div>
-                                                <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Corporation Bank</label> </div>
-                                                </div>
-                                                <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>UCO Bank</label> </div>
-                                                </div>
-                                                <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Indian Bank</label> </div>
-                                                </div>
-                                                <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Federal Bank</label> </div>
-                                                </div>
-                                                <div class="check_box">
-                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>ING Vysya Bank</label> </div>
+                                                    <div class="radio"> <label><input type="radio" name="radio"><i></i>Freedom</label> </div>
                                                 </div>
                                             </div>
                                             <div class="clear"></div>

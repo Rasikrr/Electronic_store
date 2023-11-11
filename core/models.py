@@ -95,7 +95,13 @@ class Order(models.Model):
         ("delivered", "delivered")
     ]
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    address = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    zip_code = models.CharField(max_length=50)
+    tel = models.CharField(max_length=50)
     cart_items = models.ManyToManyField(CartItem, blank=True)
     items_list = models.TextField()
     total = models.PositiveIntegerField()
@@ -105,8 +111,19 @@ class Order(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.cart_items.clear()
+        self.fill_personal_data()
         cart_items_to_add = CartItem.objects.filter(user=self.user)
         self.cart_items.set(cart_items_to_add)
+
+    def fill_personal_data(self):
+        user_profile = Profile.objects.get(user=self.user)
+        self.tel = user_profile.telephone
+        self.address = user_profile.address
+        self.first_name = user_profile.first_name
+        self.last_name = user_profile.last_name
+        self.zip_code = user_profile.zip_code
+        self.country = user_profile.country
+        self.city = user_profile.city
 
     def __str__(self):
         return f"Order: {self.user.username} {self.creation_date}"

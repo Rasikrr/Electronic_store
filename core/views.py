@@ -205,7 +205,7 @@ def profile(request, user_id):
             return search_func(request)
     else:
         if user != user_2 or user_2 is None:
-            return redirect(reverse("profile", kwargs={"user_id": request.user.id}))
+            return redirect("404")
         return render(request, "profile.html", context=context)
 
 
@@ -242,7 +242,7 @@ def checkout(request, user_id):
         return redirect("payment", user_id=user_id)
     else:
         if user != user_2 or user_2 is None:
-            return redirect(reverse("checkout", kwargs={"user_id": request.user.id}))
+            return redirect("404")
         return render(request, "checkout.html", context={"user_profile": user_profile,
                                                          "cart": cart,
                                                          "user_id": user_id,
@@ -254,9 +254,15 @@ def checkout(request, user_id):
 @login_required(login_url="signin")
 def successful_checkout(request, user_id):
     context = default_context(request)
+    user = context["user"]
+    try:
+        user2 = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        user2 = None
+    if user != user2 or user2 is None:
+        return redirect("404")
     cart_total = sum(map(lambda x: x.product.price * x.quantity, context["cart"]))
     context["cart_total"] = cart_total
-    user = context["user"]
     order = Order.objects.create(user=user, total=cart_total)
     cart = context["cart"]
     for item in cart:
@@ -475,6 +481,16 @@ def check_cart(request):
     return JsonResponse({'cart_len': cart_len})
 
 
+def error_404(request):
+    context = default_context(request)
+    return render(request, "404_error.html", context=context)
+
+
+def second_404(request):
+    context = default_context(request)
+    return render(request, "404_error.html", context=context, status=404)
+
+
 def check_wishlist(request):
     try:
         wishlist = WishListItem.objects.filter(user=request.user)
@@ -499,9 +515,12 @@ def remove_from_cart(request, product_id):
     return JsonResponse({"quantity": quantity})
 
 
+@login_required(login_url="signin")
 def payment(request, user_id):
     context = default_context(request)
     context["user_id"] = user_id
+    cart_total = sum(map(lambda x: x.product.price * x.quantity, context["cart"]))
+    context["cart_total"] = cart_total
     return render(request, "payment.html", context=context)
 
 

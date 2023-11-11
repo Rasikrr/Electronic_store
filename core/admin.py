@@ -35,8 +35,8 @@ class WishListAdmin(admin.ModelAdmin):
 
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ("user", "order_status", "total")
-    list_display_links = ("user", "order_status")
+    list_display = ("user", "first_name", "last_name", "city", "country", "address", "zip_code", "order_status", "total")
+    list_display_links = ("user", "first_name", "last_name", "order_status")
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
